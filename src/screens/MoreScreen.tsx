@@ -18,6 +18,7 @@ export default function MoreScreen() {
   const toggleStoreFavorite = useAppStore((s) => s.toggleStoreFavorite);
   const addExpense = useAppStore((s) => s.addExpense);
   const removeExpense = useAppStore((s) => s.removeExpense);
+  const resetOnboarding = useAppStore((s) => s.resetOnboarding);
 
   const [showGaps, setShowGaps] = useState(false);
   const [newStore, setNewStore] = useState('');
@@ -202,6 +203,15 @@ export default function MoreScreen() {
             </View>
           ))}
         </Card>
+      </Section>
+
+      <Section title="O aplikacji">
+        <PrimaryButton
+          title="Pokaż wprowadzenie ponownie"
+          icon="information-outline"
+          variant="outline"
+          onPress={resetOnboarding}
+        />
       </Section>
     </ScrollView>
   );

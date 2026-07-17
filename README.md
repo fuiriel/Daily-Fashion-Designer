@@ -47,8 +47,14 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - Rejestr wydatków, budżet miesięczny z ostrzeżeniem o przekroczeniu, wartość szafy
 - Lista ulubionych sklepów
 
+### 🚀 Pierwsze uruchomienie
+- Przy pierwszym otwarciu aplikacja pokazuje krótkie wprowadzenie (4 ekrany) —
+  można je w każdej chwili **pominąć**, a później wywołać ponownie w zakładce
+  Więcej → „Pokaż wprowadzenie ponownie"
+
 Wszystkie dane są zapisywane lokalnie na telefonie (AsyncStorage) — działa offline
-(poza pobieraniem pogody).
+(poza pobieraniem pogody). Pola z datą (np. data zakupu) mają wbudowany kalendarz
+z blokadą dat z przyszłości.
 
 ## Uruchomienie
 

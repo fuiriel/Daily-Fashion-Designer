@@ -10,36 +10,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import CalendarGrid from '../components/CalendarGrid';
 import { Card, Chip, ChipRow, EmptyState, ItemThumb, PrimaryButton } from '../components/ui';
 import { TIMES_OF_DAY } from '../data/constants';
 import { DailyForecast, fetchDailyForecast, geocodeCity } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
 import { theme } from '../theme';
 import { Outfit, TimeOfDay } from '../types';
-
-const WEEKDAYS = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
-const MONTHS = [
-  'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-  'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień',
-];
-
-function toISO(d: Date): string {
-  const m = `${d.getMonth() + 1}`.padStart(2, '0');
-  const day = `${d.getDate()}`.padStart(2, '0');
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-
-// dni miesiąca w tygodniach zaczynających się od poniedziałku
-function monthGrid(year: number, month: number): (Date | null)[] {
-  const first = new Date(year, month, 1);
-  const offset = (first.getDay() + 6) % 7; // pon=0 ... nd=6
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (Date | null)[] = [];
-  for (let i = 0; i < offset; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
-}
+import { formatDatePl, todayISO as todayISOFn } from '../utils/date';
 
 export default function CalendarScreen({ navigation, route }: any) {
   const outfits = useAppStore((s) => s.outfits);
@@ -49,9 +27,7 @@ export default function CalendarScreen({ navigation, route }: any) {
   const removePlan = useAppStore((s) => s.removePlan);
   const prefs = useAppStore((s) => s.prefs);
 
-  const today = new Date();
-  const todayISO = toISO(today);
-  const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const todayISO = todayISOFn();
   const [selectedDate, setSelectedDate] = useState(todayISO);
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerTime, setPickerTime] = useState<TimeOfDay | undefined>();
@@ -90,7 +66,6 @@ export default function CalendarScreen({ navigation, route }: any) {
     };
   }, [prefs.city]);
 
-  const grid = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor]);
   const plansByDate = useMemo(() => {
     const map = new Map<string, typeof plans>();
     for (const p of plans) {
@@ -100,14 +75,10 @@ export default function CalendarScreen({ navigation, route }: any) {
     }
     return map;
   }, [plans]);
+  const markedDates = useMemo(() => new Set(plans.map((p) => p.date)), [plans]);
 
   const dayPlans = plansByDate.get(selectedDate) ?? [];
   const dayForecast = forecasts[selectedDate];
-
-  const changeMonth = (delta: number) => {
-    const d = new Date(cursor.year, cursor.month + delta, 1);
-    setCursor({ year: d.getFullYear(), month: d.getMonth() });
-  };
 
   const outfitById = (id: string) => outfits.find((o) => o.id === id);
 
@@ -134,8 +105,7 @@ export default function CalendarScreen({ navigation, route }: any) {
       { text: 'Usuń', style: 'destructive', onPress: () => removePlan(planId) },
     ]);
 
-  const selectedDateObj = new Date(`${selectedDate}T12:00:00`);
-  const selectedLabel = `${selectedDateObj.getDate()} ${MONTHS[selectedDateObj.getMonth()].toLowerCase()} ${selectedDateObj.getFullYear()}`;
+  const selectedLabel = formatDatePl(selectedDate);
 
   const pendingOutfit = pendingOutfitId ? outfitById(pendingOutfitId) : undefined;
 
@@ -162,45 +132,12 @@ export default function CalendarScreen({ navigation, route }: any) {
         </Card>
       )}
       <Card>
-        <View style={s.monthHeader}>
-          <TouchableOpacity onPress={() => changeMonth(-1)} hitSlop={10}>
-            <MaterialCommunityIcons name="chevron-left" size={28} color={theme.colors.text} />
-          </TouchableOpacity>
-          <Text style={s.monthTitle}>
-            {MONTHS[cursor.month]} {cursor.year}
-          </Text>
-          <TouchableOpacity onPress={() => changeMonth(1)} hitSlop={10}>
-            <MaterialCommunityIcons name="chevron-right" size={28} color={theme.colors.text} />
-          </TouchableOpacity>
-        </View>
-        <View style={s.weekRow}>
-          {WEEKDAYS.map((w) => (
-            <Text key={w} style={s.weekday}>
-              {w}
-            </Text>
-          ))}
-        </View>
-        <View style={s.daysGrid}>
-          {grid.map((date, i) => {
-            if (!date) return <View key={i} style={s.dayCell} />;
-            const iso = toISO(date);
-            const isSelected = iso === selectedDate;
-            const isToday = iso === todayISO;
-            const hasPlans = plansByDate.has(iso);
-            return (
-              <TouchableOpacity
-                key={i}
-                style={[s.dayCell, isSelected && s.daySelected, !isSelected && isToday && s.dayToday]}
-                onPress={() => setSelectedDate(iso)}
-              >
-                <Text style={[s.dayNumber, isSelected && { color: '#fff', fontWeight: '700' }]}>
-                  {date.getDate()}
-                </Text>
-                <View style={[s.dot, hasPlans && { backgroundColor: isSelected ? '#fff' : theme.colors.primary }]} />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <CalendarGrid
+          selectedISO={selectedDate}
+          onSelect={setSelectedDate}
+          todayISO={todayISO}
+          markedDates={markedDates}
+        />
       </Card>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -332,33 +269,6 @@ export default function CalendarScreen({ navigation, route }: any) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
-  monthHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  monthTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text },
-  weekRow: { flexDirection: 'row', marginBottom: 4 },
-  weekday: {
-    flex: 1,
-    textAlign: 'center',
-    color: theme.colors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  daysGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  dayCell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radius.sm,
-  },
-  daySelected: { backgroundColor: theme.colors.primary },
-  dayToday: { borderWidth: 1.5, borderColor: theme.colors.primary },
-  dayNumber: { fontSize: 14, color: theme.colors.text },
-  dot: { width: 5, height: 5, borderRadius: 3, marginTop: 2, backgroundColor: 'transparent' },
   dayTitle: { fontSize: 16, fontWeight: '700', color: theme.colors.text },
   forecastBadge: {
     flexDirection: 'row',

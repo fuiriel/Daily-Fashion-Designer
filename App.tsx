@@ -5,6 +5,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Onboarding from './src/components/Onboarding';
+import { useAppStore, useHydrated } from './src/store/useAppStore';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
 import ItemFormScreen from './src/screens/ItemFormScreen';
@@ -55,10 +57,16 @@ const TAB_ICONS: Record<string, string> = {
 };
 
 export default function App() {
+  const hydrated = useHydrated();
+  const onboardingDone = useAppStore((s) => s.onboardingDone);
+  const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const showOnboarding = hydrated && !onboardingDone;
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
         <StatusBar style="dark" />
+        {showOnboarding && <Onboarding onDone={completeOnboarding} />}
         <Tab.Navigator
           screenOptions={({ route }) => ({
             headerStyle: { backgroundColor: theme.colors.background },

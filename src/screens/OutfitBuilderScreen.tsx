@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Chip, ChipRow, Field, ItemThumb, PrimaryButton, Section } from '../components/ui';
+import { Chip, ChipRow, EmptyState, Field, ItemThumb, PrimaryButton, Section } from '../components/ui';
 import { MAIN_CATEGORIES, OCCASIONS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
 import { theme } from '../theme';
@@ -40,6 +40,24 @@ export default function OutfitBuilderScreen({ navigation }: any) {
     });
     navigation.goBack();
   };
+
+  if (items.length === 0) {
+    return (
+      <View style={[s.container, { justifyContent: 'center' }]}>
+        <EmptyState
+          icon="wardrobe-outline"
+          text="Twoja szafa jest pusta — nie ma z czego ułożyć kompozycji. Najpierw dodaj swoje ubrania, buty i akcesoria."
+        />
+        <View style={{ paddingHorizontal: 24 }}>
+          <PrimaryButton
+            title="Przejdź do szafy i dodaj rzeczy"
+            icon="plus"
+            onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>

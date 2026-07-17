@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import DatePickerField from '../components/DatePickerField';
 import { Chip, ChipRow, Field, PrimaryButton, Section } from '../components/ui';
 import {
   COLOR_PALETTE,
@@ -202,7 +203,7 @@ export default function ItemFormScreen({ navigation, route }: any) {
       <Field label="Marka" value={brand} onChangeText={setBrand} placeholder="np. Zara" />
       <Field label="Cena (zł)" value={price} onChangeText={setPrice} placeholder="np. 129.99" keyboardType="numeric" />
       <Field label="Gdzie kupione" value={store} onChangeText={setStore} placeholder="np. Zalando" />
-      <Field label="Data zakupu" value={purchaseDate} onChangeText={setPurchaseDate} placeholder="RRRR-MM-DD" />
+      <DatePickerField label="Data zakupu" value={purchaseDate} onChange={setPurchaseDate} placeholder="Wybierz datę zakupu" />
 
       <View style={s.switchRow}>
         <Text style={{ color: theme.colors.text, fontWeight: '600' }}>Ulubione ❤️ (priorytet u stylisty)</Text>

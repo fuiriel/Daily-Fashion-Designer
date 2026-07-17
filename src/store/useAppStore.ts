@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { Expense, Outfit, PlannedOutfit, StorePref, UserPrefs, WardrobeItem } from '../types';
@@ -14,6 +15,10 @@ interface AppState {
   stores: StorePref[];
   plans: PlannedOutfit[];
   prefs: UserPrefs;
+  onboardingDone: boolean;
+
+  completeOnboarding: () => void;
+  resetOnboarding: () => void;
 
   addItem: (item: Omit<WardrobeItem, 'id' | 'createdAt'>) => WardrobeItem;
   updateItem: (id: string, patch: Partial<WardrobeItem>) => void;
@@ -48,6 +53,10 @@ export const useAppStore = create<AppState>()(
       stores: [],
       plans: [],
       prefs: { favoriteStyles: [] },
+      onboardingDone: false,
+
+      completeOnboarding: () => set({ onboardingDone: true }),
+      resetOnboarding: () => set({ onboardingDone: false }),
 
       addItem: (data) => {
         const item: WardrobeItem = { ...data, id: uid(), createdAt: new Date().toISOString() };
@@ -119,3 +128,15 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+// Czy zapisany stan został już wczytany z pamięci urządzenia/przeglądarki.
+// Dzięki temu onboarding nie miga zanim poznamy, czy użytkownik już go przeszedł.
+export function useHydrated(): boolean {
+  const [hydrated, setHydrated] = useState(useAppStore.persist.hasHydrated());
+  useEffect(() => {
+    const unsub = useAppStore.persist.onFinishHydration(() => setHydrated(true));
+    setHydrated(useAppStore.persist.hasHydrated());
+    return unsub;
+  }, []);
+  return hydrated;
+}
