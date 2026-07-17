@@ -1,10 +1,12 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showDialog } from '../utils/dialog';
-import { Card, Chip, ChipRow, EmptyState, ItemThumb, PrimaryButton, Section } from '../components/ui';
+import GapSuggestions from '../components/GapSuggestions';
+import { Card, Chip, ChipRow, ItemThumb, PrimaryButton, Section } from '../components/ui';
 import { OCCASIONS, STYLES, TIMES_OF_DAY } from '../data/constants';
+import { analyzeGaps } from '../logic/gaps';
 import { suggestOutfits } from '../logic/stylist';
 import { fetchCurrentWeather, geocodeCity, manualWeather } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
@@ -21,6 +23,7 @@ function defaultTimeOfDay(): TimeOfDay {
 
 export default function StylistScreen({ navigation }: any) {
   const items = useAppStore((s) => s.items);
+  const stores = useAppStore((s) => s.stores);
   const prefs = useAppStore((s) => s.prefs);
   const setPrefs = useAppStore((s) => s.setPrefs);
   const addOutfit = useAppStore((s) => s.addOutfit);
@@ -78,12 +81,13 @@ export default function StylistScreen({ navigation }: any) {
     : weather;
 
   const generate = () => {
-    if (!effectiveWeather) {
-      showDialog('Pogoda', 'Najpierw pobierz pogodę albo ustaw ją ręcznie.');
+    // pusta szafa: nie ma z czego układać — pokaż sugestie zakupów (sekcja niżej)
+    if (items.length === 0) {
+      setSuggestions([]);
       return;
     }
-    if (items.length === 0) {
-      showDialog('Pusta szafa', 'Dodaj najpierw swoje ubrania w zakładce Szafa.');
+    if (!effectiveWeather) {
+      showDialog('Pogoda', 'Najpierw pobierz pogodę albo ustaw ją ręcznie.');
       return;
     }
     const res = suggestOutfits(items, {
@@ -95,6 +99,9 @@ export default function StylistScreen({ navigation }: any) {
     });
     setSuggestions(res);
   };
+
+  // sugestie zakupów, gdy nie da się złożyć zestawu
+  const gaps = useMemo(() => analyzeGaps(items, stores), [items, stores]);
 
   const saveSuggestion = (sug: OutfitSuggestion) => {
     const label = OCCASIONS.find((o) => o.key === occasion)?.label ?? occasion;
@@ -210,7 +217,31 @@ export default function StylistScreen({ navigation }: any) {
         <View style={{ marginTop: 20 }}>
           <Text style={s.resultsTitle}>Propozycje stylisty</Text>
           {suggestions.length === 0 && (
-            <EmptyState icon="hanger" text="Za mało pasujących rzeczy w szafie na tę okazję i pogodę. Dodaj więcej ubrań albo zmień kryteria." />
+            <Card>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                <MaterialCommunityIcons name="cart-heart" size={22} color={theme.colors.primary} style={{ marginRight: 8 }} />
+                <Text style={[s.cardTitle, { marginBottom: 0, flex: 1 }]}>Co warto dokupić</Text>
+              </View>
+              <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginBottom: 4 }}>
+                {items.length === 0
+                  ? 'Twoja szafa jest pusta — nie mam z czego ułożyć zestawu. Oto co warto skompletować na start:'
+                  : 'Nie udało się złożyć zestawu na tę okazję i pogodę. Dodaj więcej rzeczy lub poluzuj kryteria. Warto rozważyć:'}
+              </Text>
+              {gaps.length > 0 ? (
+                <GapSuggestions gaps={gaps} limit={6} />
+              ) : (
+                <Text style={{ color: theme.colors.accent, fontSize: 14, marginTop: 4 }}>
+                  Podstawy masz już skompletowane 👏 — spróbuj poluzować kryteria (styl, „sukienka/spodnie”) albo dodaj kilka rzeczy pasujących do tej okazji.
+                </Text>
+              )}
+              <PrimaryButton
+                title="Dodaj rzecz do szafy"
+                icon="plus"
+                variant="outline"
+                onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
+                style={{ marginTop: 14 }}
+              />
+            </Card>
           )}
           {suggestions.map((sug, idx) => (
             <Card key={idx}>

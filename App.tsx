@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import DialogHost from './src/components/DialogHost';
 import Onboarding from './src/components/Onboarding';
 import { useAppStore, useHydrated } from './src/store/useAppStore';
 import CalendarScreen from './src/screens/CalendarScreen';
@@ -88,6 +89,7 @@ export default function App() {
           <Tab.Screen name="Więcej" component={MoreScreen} />
         </Tab.Navigator>
       </NavigationContainer>
+      <DialogHost />
     </SafeAreaProvider>
   );
 }

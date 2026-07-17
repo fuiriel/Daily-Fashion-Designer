@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { showDialog } from '../utils/dialog';
+import GapSuggestions from '../components/GapSuggestions';
 import { Card, Chip, ChipRow, PrimaryButton, Section } from '../components/ui';
 import { STYLES } from '../data/constants';
 import { analyzeGaps } from '../logic/gaps';
@@ -87,17 +88,11 @@ export default function MoreScreen() {
               Świetnie! Twoja szafa pokrywa wszystkie podstawowe potrzeby. 👏
             </Text>
           )}
-          {showGaps &&
-            gaps.map((g, i) => (
-              <View key={i} style={s.gapRow}>
-                <MaterialCommunityIcons name="cart-plus" size={20} color={theme.colors.primary} style={{ marginRight: 8, marginTop: 2 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: '600', color: theme.colors.text }}>{g.what}</Text>
-                  <Text style={{ color: theme.colors.textMuted, fontSize: 13 }}>{g.why}</Text>
-                  <Text style={{ color: theme.colors.accent, fontSize: 13 }}>Gdzie kupić: {g.whereToBuy.join(', ')}</Text>
-                </View>
-              </View>
-            ))}
+          {showGaps && gaps.length > 0 && (
+            <View style={{ marginTop: 4 }}>
+              <GapSuggestions gaps={gaps} />
+            </View>
+          )}
         </Card>
       </Section>
 
@@ -223,13 +218,6 @@ const s = StyleSheet.create({
   cardTitle: { fontWeight: '700', color: theme.colors.text, marginBottom: 8, fontSize: 15 },
   hint: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 8 },
   switchRow: { flexDirection: 'row', alignItems: 'center' },
-  gapRow: {
-    flexDirection: 'row',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
   statRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   statLabel: { color: theme.colors.textMuted },
   statValue: { color: theme.colors.text, fontWeight: '700' },
