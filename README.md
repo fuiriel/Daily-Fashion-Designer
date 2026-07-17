@@ -63,6 +63,25 @@ Następnie zeskanuj kod QR aplikacją **Expo Go** ([Android](https://play.google
 
 Budowa samodzielnej aplikacji (APK / App Store): [EAS Build](https://docs.expo.dev/build/introduction/) — `npx eas build`.
 
+### Wersja przeglądarkowa 🌐
+
+Ta sama aplikacja działa też w przeglądarce (react-native-web):
+
+```bash
+npm run web          # tryb deweloperski w przeglądarce
+npm run build:web    # statyczny build do katalogu dist/
+```
+
+Katalog `dist/` można wystawić na dowolnym hostingu statycznym
+(`npx serve dist` do szybkiego podglądu). W repozytorium jest też workflow
+GitHub Actions (`.github/workflows/deploy-web.yml`), który po wypchnięciu na
+główną gałąź publikuje aplikację na **GitHub Pages** — wystarczy w ustawieniach
+repozytorium włączyć Pages ze źródłem „GitHub Actions".
+
+Różnice w przeglądarce: zdjęcia dodaje się z dysku (wybór pliku), pogoda
+z lokalizacji korzysta z geolokalizacji przeglądarki, a dane zapisują się
+w localStorage tej przeglądarki (nie synchronizują się z telefonem).
+
 ## Struktura projektu
 
 ```
