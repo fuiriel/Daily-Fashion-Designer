@@ -2,7 +2,7 @@ name: Deploy web version to GitHub Pages
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, claude/virtual-stylist-app-frixy7]
   workflow_dispatch:
 
 permissions:
@@ -24,6 +24,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Enable GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Build web app
         run: npx expo export --platform web --output-dir dist
         env:
