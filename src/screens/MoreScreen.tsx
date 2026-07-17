@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import { Card, Chip, ChipRow, PrimaryButton, Section } from '../components/ui';
 import { STYLES } from '../data/constants';
 import { analyzeGaps } from '../logic/gaps';
@@ -39,13 +40,13 @@ export default function MoreScreen() {
   const saveBudget = () => {
     const val = Number(budget.replace(',', '.'));
     setPrefs({ monthlyBudget: isNaN(val) || val <= 0 ? undefined : val });
-    Alert.alert('Zapisano', 'Budżet miesięczny został zaktualizowany.');
+    showDialog('Zapisano', 'Budżet miesięczny został zaktualizowany.');
   };
 
   const addNewExpense = () => {
     const amount = Number(expAmount.replace(',', '.'));
     if (!expTitle.trim() || isNaN(amount) || amount <= 0) {
-      Alert.alert('Wydatek', 'Podaj nazwę i poprawną kwotę.');
+      showDialog('Wydatek', 'Podaj nazwę i poprawną kwotę.');
       return;
     }
     addExpense({ title: expTitle.trim(), amount, date: new Date().toISOString().slice(0, 10) });

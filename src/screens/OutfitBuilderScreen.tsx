@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import { Chip, ChipRow, EmptyState, Field, ItemThumb, PrimaryButton, Section } from '../components/ui';
 import { MAIN_CATEGORIES, OCCASIONS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
@@ -27,7 +28,7 @@ export default function OutfitBuilderScreen({ navigation }: any) {
 
   const save = () => {
     if (selected.length < 2) {
-      Alert.alert('Za mało rzeczy', 'Kompozycja powinna mieć przynajmniej 2 elementy.');
+      showDialog('Za mało rzeczy', 'Kompozycja powinna mieć przynajmniej 2 elementy.');
       return;
     }
     addOutfit({

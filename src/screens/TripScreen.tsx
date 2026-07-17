@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import { Card, EmptyState, ItemThumb, PrimaryButton } from '../components/ui';
 import { buildPackingList, PackingList } from '../logic/packing';
 import { fetchDailyForecast, geocodeCity } from '../services/weather';
@@ -17,11 +18,11 @@ export default function TripScreen({ navigation }: any) {
   const plan = async () => {
     const d = Math.max(1, Math.min(Number(days) || 7, 16));
     if (!destination.trim()) {
-      Alert.alert('Cel podróży', 'Wpisz miasto, do którego jedziesz (może być za granicą).');
+      showDialog('Cel podróży', 'Wpisz miasto, do którego jedziesz (może być za granicą).');
       return;
     }
     if (items.length === 0) {
-      Alert.alert('Pusta szafa', 'Dodaj najpierw swoje ubrania w zakładce Szafa.');
+      showDialog('Pusta szafa', 'Dodaj najpierw swoje ubrania w zakładce Szafa.');
       return;
     }
     setLoading(true);
@@ -32,7 +33,7 @@ export default function TripScreen({ navigation }: any) {
       if (!forecast.length) throw new Error('Brak prognozy dla tego miejsca.');
       setResult(buildPackingList(items, forecast, d, `${geo.name}, ${geo.country}`));
     } catch (e: any) {
-      Alert.alert('Wyjazd', e?.message ?? 'Nie udało się przygotować listy.');
+      showDialog('Wyjazd', e?.message ?? 'Nie udało się przygotować listy.');
     } finally {
       setLoading(false);
     }

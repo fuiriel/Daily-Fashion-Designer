@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import { EmptyState, ItemThumb } from '../components/ui';
 import { useAppStore } from '../store/useAppStore';
 import { theme } from '../theme';
@@ -16,7 +17,7 @@ export default function OutfitsScreen({ navigation }: any) {
   const list = onlyFavorites ? outfits.filter((o) => o.favorite) : outfits;
 
   const confirmDelete = (o: Outfit) =>
-    Alert.alert('Usunąć kompozycję?', `„${o.name}"`, [
+    showDialog('Usunąć kompozycję?', `„${o.name}"`, [
       { text: 'Anuluj', style: 'cancel' },
       { text: 'Usuń', style: 'destructive', onPress: () => removeOutfit(o.id) },
     ]);

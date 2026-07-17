@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import { Card, Chip, ChipRow, EmptyState, ItemThumb, PrimaryButton, Section } from '../components/ui';
 import { OCCASIONS, STYLES, TIMES_OF_DAY } from '../data/constants';
 import { suggestOutfits } from '../logic/stylist';
@@ -45,7 +46,7 @@ export default function StylistScreen({ navigation }: any) {
       const w = await fetchCurrentWeather(loc.coords.latitude, loc.coords.longitude, 'Twoja lokalizacja');
       setWeather(w);
     } catch (e: any) {
-      Alert.alert('Pogoda', e?.message ?? 'Nie udało się pobrać pogody.');
+      showDialog('Pogoda', e?.message ?? 'Nie udało się pobrać pogody.');
     } finally {
       setLoadingWeather(false);
     }
@@ -61,7 +62,7 @@ export default function StylistScreen({ navigation }: any) {
       setWeather(w);
       setPrefs({ city: city.trim() });
     } catch (e: any) {
-      Alert.alert('Pogoda', e?.message ?? 'Nie udało się pobrać pogody.');
+      showDialog('Pogoda', e?.message ?? 'Nie udało się pobrać pogody.');
     } finally {
       setLoadingWeather(false);
     }
@@ -78,11 +79,11 @@ export default function StylistScreen({ navigation }: any) {
 
   const generate = () => {
     if (!effectiveWeather) {
-      Alert.alert('Pogoda', 'Najpierw pobierz pogodę albo ustaw ją ręcznie.');
+      showDialog('Pogoda', 'Najpierw pobierz pogodę albo ustaw ją ręcznie.');
       return;
     }
     if (items.length === 0) {
-      Alert.alert('Pusta szafa', 'Dodaj najpierw swoje ubrania w zakładce Szafa.');
+      showDialog('Pusta szafa', 'Dodaj najpierw swoje ubrania w zakładce Szafa.');
       return;
     }
     const res = suggestOutfits(items, {
@@ -104,7 +105,7 @@ export default function StylistScreen({ navigation }: any) {
       favorite: false,
       source: 'stylista',
     });
-    Alert.alert('Zapisano', 'Kompozycja trafiła do zakładki Kompozycje.');
+    showDialog('Zapisano', 'Kompozycja trafiła do zakładki Kompozycje.');
   };
 
   return (

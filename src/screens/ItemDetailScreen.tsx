@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import { Card, Chip, ChipRow, ColorDots, PrimaryButton } from '../components/ui';
 import { WARMTH_LABELS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
@@ -21,7 +22,7 @@ export default function ItemDetailScreen({ navigation, route }: any) {
   }
 
   const confirmDelete = () =>
-    Alert.alert('Usunąć?', `„${item.name}" zniknie z szafy i zapisanych kompozycji.`, [
+    showDialog('Usunąć?', `„${item.name}" zniknie z szafy i zapisanych kompozycji.`, [
       { text: 'Anuluj', style: 'cancel' },
       {
         text: 'Usuń',

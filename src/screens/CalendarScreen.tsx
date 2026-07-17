@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   FlatList,
   Modal,
   ScrollView,
@@ -11,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import CalendarGrid from '../components/CalendarGrid';
+import { showDialog } from '../utils/dialog';
 import { Card, Chip, ChipRow, EmptyState, ItemThumb, PrimaryButton } from '../components/ui';
 import { TIMES_OF_DAY } from '../data/constants';
 import { DailyForecast, fetchDailyForecast, geocodeCity } from '../services/weather';
@@ -90,7 +90,7 @@ export default function CalendarScreen({ navigation, route }: any) {
 
   const openPicker = () => {
     if (outfits.length === 0) {
-      Alert.alert(
+      showDialog(
         'Brak kompozycji',
         'Najpierw zapisz kompozycję — poproś Stylistę o propozycję albo stwórz własną w zakładce Kompozycje.'
       );
@@ -100,7 +100,7 @@ export default function CalendarScreen({ navigation, route }: any) {
   };
 
   const confirmRemove = (planId: string, outfitName: string) =>
-    Alert.alert('Usunąć z planu?', `„${outfitName}" zniknie z tego dnia.`, [
+    showDialog('Usunąć z planu?', `„${outfitName}" zniknie z tego dnia.`, [
       { text: 'Anuluj', style: 'cancel' },
       { text: 'Usuń', style: 'destructive', onPress: () => removePlan(planId) },
     ]);

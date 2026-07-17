@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { showDialog } from '../utils/dialog';
 import DatePickerField from '../components/DatePickerField';
 import { Chip, ChipRow, Field, PrimaryButton, Section } from '../components/ui';
 import {
@@ -52,7 +53,7 @@ export default function ItemFormScreen({ navigation, route }: any) {
       ? await ImagePicker.requestCameraPermissionsAsync()
       : await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      Alert.alert('Brak uprawnień', 'Nadaj aplikacji dostęp do aparatu/galerii w ustawieniach telefonu.');
+      showDialog('Brak uprawnień', 'Nadaj aplikacji dostęp do aparatu/galerii w ustawieniach telefonu.');
       return;
     }
     const result = fromCamera
@@ -63,11 +64,11 @@ export default function ItemFormScreen({ navigation, route }: any) {
 
   const save = () => {
     if (!name.trim()) {
-      Alert.alert('Uzupełnij nazwę', 'Każda rzecz musi mieć nazwę.');
+      showDialog('Uzupełnij nazwę', 'Każda rzecz musi mieć nazwę.');
       return;
     }
     if (!subcategory) {
-      Alert.alert('Wybierz rodzaj', 'Zaznacz np. sukienka, jeansy, sneakersy...');
+      showDialog('Wybierz rodzaj', 'Zaznacz np. sukienka, jeansy, sneakersy...');
       return;
     }
     const data = {
