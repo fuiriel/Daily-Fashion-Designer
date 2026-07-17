@@ -1,0 +1,108 @@
+import { slotOf } from '../data/constants';
+import { DailyForecast } from '../services/weather';
+import { Slot, WardrobeItem } from '../types';
+import { scoreItem, warmthNeed } from './stylist';
+import { StylistRequest, WeatherInfo } from '../types';
+
+export interface PackingList {
+  summary: string;
+  toPack: { slot: Slot; label: string; items: WardrobeItem[] }[];
+  missing: string[];
+}
+
+const SLOT_LABELS: Record<Slot, string> = {
+  top: 'Góry',
+  bottom: 'Doły',
+  dress: 'Sukienki / kombinezony',
+  outerwear: 'Okrycia wierzchnie',
+  shoes: 'Buty',
+  accessory: 'Akcesoria',
+};
+
+// Ile sztuk z danego slotu zabrać na X dni
+function countFor(slot: Slot, days: number): number {
+  switch (slot) {
+    case 'top':
+      return Math.min(Math.ceil(days * 0.8) + 1, 10);
+    case 'bottom':
+      return Math.min(Math.ceil(days / 3) + 1, 4);
+    case 'dress':
+      return Math.min(Math.ceil(days / 4), 3);
+    case 'outerwear':
+      return 1;
+    case 'shoes':
+      return days > 4 ? 2 : 1;
+    case 'accessory':
+      return 3;
+  }
+}
+
+export function buildPackingList(
+  items: WardrobeItem[],
+  forecast: DailyForecast[],
+  days: number,
+  destination: string
+): PackingList {
+  const minTemp = Math.min(...forecast.map((f) => f.tempMin));
+  const maxTemp = Math.max(...forecast.map((f) => f.tempMax));
+  const rainyDays = forecast.filter((f) => f.isRain || f.precipitationProb >= 50).length;
+  const snowy = forecast.some((f) => f.isSnow);
+
+  const avgWeather: WeatherInfo = {
+    tempC: Math.round((minTemp + maxTemp) / 2),
+    feelsLikeC: Math.round((minTemp + maxTemp) / 2),
+    precipitationProb: rainyDays > 0 ? 70 : 10,
+    windKmh: 10,
+    isRain: rainyDays > 0,
+    isSnow: snowy,
+    description: '',
+  };
+  const req: StylistRequest = {
+    occasion: 'codzienne',
+    timeOfDay: 'dzień',
+    bottomPreference: 'dowolnie',
+    styles: [],
+    weather: avgWeather,
+  };
+  const need = warmthNeed(avgWeather);
+  const needCold = warmthNeed({ ...avgWeather, tempC: minTemp, feelsLikeC: minTemp });
+
+  const bySlot = new Map<Slot, WardrobeItem[]>();
+  for (const item of items) {
+    // na wyjazd bierzemy rzeczy pasujące do zakresu temperatur
+    if (Math.abs(item.warmth - need) > 1 && Math.abs(item.warmth - needCold) > 1) continue;
+    const slot = slotOf(item.mainCategory, item.subcategory);
+    const list = bySlot.get(slot) ?? [];
+    list.push(item);
+    bySlot.set(slot, list);
+  }
+
+  const toPack: PackingList['toPack'] = [];
+  const missing: string[] = [];
+  const slots: Slot[] = ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'];
+  for (const slot of slots) {
+    const pool = (bySlot.get(slot) ?? []).sort(
+      (a, b) => scoreItem(b, req, need) - scoreItem(a, req, need)
+    );
+    const wanted = countFor(slot, days);
+    const chosen = pool.slice(0, wanted);
+    if (chosen.length) toPack.push({ slot, label: SLOT_LABELS[slot], items: chosen });
+    if (slot === 'top' && chosen.length < Math.min(wanted, 2)) missing.push('za mało gór na tę pogodę');
+    if (slot === 'bottom' && chosen.length === 0 && (bySlot.get('dress') ?? []).length === 0)
+      missing.push('brak dołów lub sukienek na tę pogodę');
+    if (slot === 'shoes' && chosen.length === 0) missing.push('brak butów na ten klimat');
+    if (slot === 'outerwear' && needCold >= 3 && chosen.length === 0)
+      missing.push('brak okrycia wierzchniego na chłodniejsze dni');
+  }
+  if (rainyDays > 0 && !items.some((i) => i.subcategory === 'parasol' || i.waterproof)) {
+    missing.push('coś na deszcz (parasol / kurtka przeciwdeszczowa)');
+  }
+
+  const summary =
+    `${destination}: ${minTemp}°C do ${maxTemp}°C, ` +
+    (rainyDays > 0 ? `deszcz przez ok. ${rainyDays} dni. ` : 'raczej bez opadów. ') +
+    (snowy ? 'Możliwy śnieg. ' : '') +
+    `Plan na ${days} dni.`;
+
+  return { summary, toPack, missing };
+}

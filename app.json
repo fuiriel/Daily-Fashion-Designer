@@ -1,25 +1,46 @@
 {
   "expo": {
-    "name": "Daily-Fashion-Designer-tmp",
-    "slug": "Daily-Fashion-Designer-tmp",
+    "name": "Daily Fashion Designer",
+    "slug": "daily-fashion-designer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Aplikacja używa aparatu, aby robić zdjęcia ubrań do wirtualnej szafy.",
+        "NSPhotoLibraryUsageDescription": "Aplikacja używa galerii, aby dodawać zdjęcia ubrań do wirtualnej szafy.",
+        "NSLocationWhenInUseUsageDescription": "Lokalizacja służy do pobrania aktualnej pogody i dopasowania stroju."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FAF7F2",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["CAMERA", "ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aplikacja używa galerii, aby dodawać zdjęcia ubrań do wirtualnej szafy.",
+          "cameraPermission": "Aplikacja używa aparatu, aby robić zdjęcia ubrań do wirtualnej szafy."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Lokalizacja służy do pobrania aktualnej pogody i dopasowania stroju."
+        }
+      ]
+    ]
   }
 }

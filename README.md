@@ -1,0 +1,73 @@
+# Daily Fashion Designer 👗
+
+Wirtualny stylista w Twoim telefonie. Aplikacja mobilna (React Native + Expo), która na
+podstawie **Twojej własnej szafy** proponuje, co na siebie założyć — teraz albo na konkretny
+dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl.
+
+## Co potrafi
+
+### 👚 Wirtualna szafa
+- Dodawaj ubrania, buty i akcesoria **ze zdjęciem** (aparat lub galeria)
+- Opisuj i kategoryzuj: rodzaj (sukienka, jeansy, sneakersy…), kolory, wzór, rozmiar, marka
+- Opcjonalnie: data zakupu, cena, sklep — zakupy trafiają automatycznie do rejestru wydatków
+- Atrybuty „mądre”: poziom ciepła (1–5), nieprzemakalność, style, okazje, pory roku
+- Oznaczaj rzeczy jako **ulubione ❤️** — stylista da im pierwszeństwo
+- Wyszukiwarka i filtry
+
+### ✨ Stylista
+- Propozycje kompletnych kompozycji (góra + dół lub sukienka, okrycie, buty, akcesoria)
+- Kryteria: **okazja** (codzienne, praca, kino, park, rower, sport, randka, przyjęcie,
+  wesele, pogrzeb, plaża), **pora dnia**, preferencja **sukienka / spodnie / spódnica**,
+  **styl** (casual, elegancki, sportowy, boho…)
+- **Pogoda na żywo** (Open-Meteo, bez klucza API): z lokalizacji GPS, po nazwie miasta
+  albo ustawiona ręcznie
+- Zna zasady: na pogrzeb tylko stonowane kolory, na wesele bez białej sukienki,
+  w deszcz parasol i nieprzemakalne buty, na rower nic eleganckiego
+- Ocena harmonii kolorów i wzorów; wyjaśnia, dlaczego to proponuje
+- Każdą propozycję można **zapisać jako kompozycję**
+
+### 👗 Kompozycje
+- Zapisuj propozycje stylisty i **twórz własne** z rzeczy w szafie
+- Dodawaj do ulubionych, notatki, przypisuj okazje
+
+### ✈️ Wyjazd
+- Podaj cel podróży (także za granicą) i liczbę dni — aplikacja pobierze tamtejszą
+  prognozę i ułoży **listę pakowania** z Twojej szafy + wskaże, czego dokupić
+
+### 🛍️ Braki, budżet i sklepy
+- Analiza braków w szafie („kapsułka minimum") z podpowiedzią **gdzie kupić**
+  (Twoje ulubione sklepy lub popularne sieciówki)
+- Rejestr wydatków, budżet miesięczny z ostrzeżeniem o przekroczeniu, wartość szafy
+- Lista ulubionych sklepów
+
+Wszystkie dane są zapisywane lokalnie na telefonie (AsyncStorage) — działa offline
+(poza pobieraniem pogody).
+
+## Uruchomienie
+
+Wymagany Node.js 20+.
+
+```bash
+npm install
+npx expo start
+```
+
+Następnie zeskanuj kod QR aplikacją **Expo Go** ([Android](https://play.google.com/store/apps/details?id=host.exp.exponent) / [iOS](https://apps.apple.com/app/expo-go/id982107779)) — aplikacja uruchomi się na Twoim telefonie.
+
+Budowa samodzielnej aplikacji (APK / App Store): [EAS Build](https://docs.expo.dev/build/introduction/) — `npx eas build`.
+
+## Struktura projektu
+
+```
+App.tsx                     – nawigacja (zakładki + stosy)
+src/
+  types.ts                  – model danych (rzecz, kompozycja, wydatek, pogoda…)
+  data/constants.ts         – kategorie, kolory, style, okazje, formalność
+  store/useAppStore.ts      – stan aplikacji (zustand + AsyncStorage)
+  services/weather.ts       – pogoda i geokodowanie (Open-Meteo)
+  logic/stylist.ts          – silnik doboru kompozycji (punktacja, harmonia kolorów)
+  logic/gaps.ts             – analiza braków w szafie
+  logic/packing.ts          – lista pakowania na wyjazd
+  components/ui.tsx         – wspólne komponenty UI
+  screens/                  – ekrany: Szafa, Stylista, Kompozycje, Wyjazd, Więcej
+```
