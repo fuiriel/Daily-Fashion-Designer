@@ -30,6 +30,13 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - Zapisuj propozycje stylisty i **twórz własne** z rzeczy w szafie
 - Dodawaj do ulubionych, notatki, przypisuj okazje
 
+### 📅 Kalendarz stylizacji
+- Planuj kompozycje na konkretne dni — widok miesiąca z oznaczeniem zaplanowanych dat
+- Kilka planów na dzień, z opcjonalną porą dnia (rano / dzień / wieczór / noc)
+- Jeśli u Stylisty podasz miasto, przy każdym dniu (do 16 dni w przód) zobaczysz
+  prognozę pogody — łatwiej ocenić, czy plan ma sens
+- Kompozycję można zaplanować też jednym dotknięciem z zakładki Kompozycje (ikona 📅)
+
 ### ✈️ Wyjazd
 - Podaj cel podróży (także za granicą) i liczbę dni — aplikacja pobierze tamtejszą
   prognozę i ułoży **listę pakowania** z Twojej szafy + wskaże, czego dokupić
@@ -69,5 +76,5 @@ src/
   logic/gaps.ts             – analiza braków w szafie
   logic/packing.ts          – lista pakowania na wyjazd
   components/ui.tsx         – wspólne komponenty UI
-  screens/                  – ekrany: Szafa, Stylista, Kompozycje, Wyjazd, Więcej
+  screens/                  – ekrany: Szafa, Stylista, Kompozycje, Kalendarz, Wyjazd, Więcej
 ```

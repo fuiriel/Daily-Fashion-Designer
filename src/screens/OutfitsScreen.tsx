@@ -35,6 +35,13 @@ export default function OutfitsScreen({ navigation }: any) {
               {outfit.occasion ? ` · ${outfit.occasion}` : ''}
             </Text>
           </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Kalendarz', { planOutfitId: outfit.id })}
+            hitSlop={10}
+            style={{ marginRight: 12 }}
+          >
+            <MaterialCommunityIcons name="calendar-plus" size={23} color={theme.colors.accent} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => toggleFavorite(outfit.id)} hitSlop={10} style={{ marginRight: 12 }}>
             <MaterialCommunityIcons
               name={outfit.favorite ? 'heart' : 'heart-outline'}

@@ -78,6 +78,14 @@ export interface Outfit {
   source: 'stylista' | 'własna';
 }
 
+export interface PlannedOutfit {
+  id: string;
+  date: string; // ISO yyyy-mm-dd
+  outfitId: string;
+  timeOfDay?: TimeOfDay;
+  note?: string;
+}
+
 export interface Expense {
   id: string;
   title: string;

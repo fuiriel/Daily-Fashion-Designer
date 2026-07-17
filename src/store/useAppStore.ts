@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Expense, Outfit, StorePref, UserPrefs, WardrobeItem } from '../types';
+import { Expense, Outfit, PlannedOutfit, StorePref, UserPrefs, WardrobeItem } from '../types';
 
 export function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -12,6 +12,7 @@ interface AppState {
   outfits: Outfit[];
   expenses: Expense[];
   stores: StorePref[];
+  plans: PlannedOutfit[];
   prefs: UserPrefs;
 
   addItem: (item: Omit<WardrobeItem, 'id' | 'createdAt'>) => WardrobeItem;
@@ -23,6 +24,10 @@ interface AppState {
   updateOutfit: (id: string, patch: Partial<Outfit>) => void;
   removeOutfit: (id: string) => void;
   toggleOutfitFavorite: (id: string) => void;
+
+  addPlan: (plan: Omit<PlannedOutfit, 'id'>) => void;
+  updatePlan: (id: string, patch: Partial<PlannedOutfit>) => void;
+  removePlan: (id: string) => void;
 
   addExpense: (expense: Omit<Expense, 'id'>) => void;
   removeExpense: (id: string) => void;
@@ -41,6 +46,7 @@ export const useAppStore = create<AppState>()(
       outfits: [],
       expenses: [],
       stores: [],
+      plans: [],
       prefs: { favoriteStyles: [] },
 
       addItem: (data) => {
@@ -79,11 +85,20 @@ export const useAppStore = create<AppState>()(
       },
       updateOutfit: (id, patch) =>
         set((s) => ({ outfits: s.outfits.map((o) => (o.id === id ? { ...o, ...patch } : o)) })),
-      removeOutfit: (id) => set((s) => ({ outfits: s.outfits.filter((o) => o.id !== id) })),
+      removeOutfit: (id) =>
+        set((s) => ({
+          outfits: s.outfits.filter((o) => o.id !== id),
+          plans: s.plans.filter((p) => p.outfitId !== id),
+        })),
       toggleOutfitFavorite: (id) =>
         set((s) => ({
           outfits: s.outfits.map((o) => (o.id === id ? { ...o, favorite: !o.favorite } : o)),
         })),
+
+      addPlan: (data) => set((s) => ({ plans: [...s.plans, { ...data, id: uid() }] })),
+      updatePlan: (id, patch) =>
+        set((s) => ({ plans: s.plans.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
+      removePlan: (id) => set((s) => ({ plans: s.plans.filter((p) => p.id !== id) })),
 
       addExpense: (data) => set((s) => ({ expenses: [{ ...data, id: uid() }, ...s.expenses] })),
       removeExpense: (id) => set((s) => ({ expenses: s.expenses.filter((e) => e.id !== id) })),

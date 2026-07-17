@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import CalendarScreen from './src/screens/CalendarScreen';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
 import ItemFormScreen from './src/screens/ItemFormScreen';
 import MoreScreen from './src/screens/MoreScreen';
@@ -48,6 +49,7 @@ const TAB_ICONS: Record<string, string> = {
   Stylista: 'auto-fix',
   Szafa: 'wardrobe-outline',
   Kompozycje: 'hanger',
+  Kalendarz: 'calendar-heart',
   Wyjazd: 'bag-suitcase',
   Więcej: 'dots-horizontal-circle-outline',
 };
@@ -73,6 +75,7 @@ export default function App() {
           <Tab.Screen name="Stylista" component={StylistScreen} options={{ title: 'Stylista' }} />
           <Tab.Screen name="Szafa" component={WardrobeStackScreen} options={{ headerShown: false }} />
           <Tab.Screen name="Kompozycje" component={OutfitsStackScreen} options={{ headerShown: false }} />
+          <Tab.Screen name="Kalendarz" component={CalendarScreen} options={{ title: 'Kalendarz stylizacji' }} />
           <Tab.Screen name="Wyjazd" component={TripScreen} />
           <Tab.Screen name="Więcej" component={MoreScreen} />
         </Tab.Navigator>
