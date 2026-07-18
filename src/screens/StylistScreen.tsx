@@ -10,7 +10,8 @@ import { analyzeGaps } from '../logic/gaps';
 import { suggestOutfits } from '../logic/stylist';
 import { fetchCurrentWeather, geocodeCity, manualWeather } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { BottomPreference, Occasion, OutfitSuggestion, StyleTag, TimeOfDay, WeatherInfo } from '../types';
 
 function defaultTimeOfDay(): TimeOfDay {
@@ -22,11 +23,13 @@ function defaultTimeOfDay(): TimeOfDay {
 }
 
 export default function StylistScreen({ navigation }: any) {
-  const items = useAppStore((s) => s.items);
-  const stores = useAppStore((s) => s.stores);
-  const prefs = useAppStore((s) => s.prefs);
-  const setPrefs = useAppStore((s) => s.setPrefs);
-  const addOutfit = useAppStore((s) => s.addOutfit);
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
+  const items = useAppStore((st) => st.items);
+  const stores = useAppStore((st) => st.stores);
+  const prefs = useAppStore((st) => st.prefs);
+  const setPrefs = useAppStore((st) => st.setPrefs);
+  const addOutfit = useAppStore((st) => st.addOutfit);
 
   const [occasion, setOccasion] = useState<Occasion>('codzienne');
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(defaultTimeOfDay());
@@ -243,59 +246,123 @@ export default function StylistScreen({ navigation }: any) {
               />
             </Card>
           )}
-          {suggestions.map((sug, idx) => (
-            <Card key={idx}>
-              <Text style={s.cardTitle}>Propozycja {idx + 1}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-                {sug.items.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={{ marginRight: 10, alignItems: 'center', width: 76 }}
-                    onPress={() => navigation.navigate('Szafa', { screen: 'ItemDetail', params: { id: item.id } })}
-                  >
-                    <ItemThumb item={item} size={72} />
-                    <Text numberOfLines={1} style={{ fontSize: 11, color: theme.colors.text, marginTop: 2 }}>
-                      {item.favorite ? '❤️ ' : ''}
-                      {item.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              {sug.explanation.map((e, i) => (
-                <Text key={i} style={s.explanation}>• {e}</Text>
-              ))}
-              {sug.missing.length > 0 && (
-                <Text style={s.missing}>Brakuje w szafie: {sug.missing.join(', ')} — sprawdź zakładkę Więcej → Czego brakuje.</Text>
-              )}
-              <PrimaryButton title="Zapisz kompozycję" icon="content-save-outline" variant="outline" onPress={() => saveSuggestion(sug)} style={{ marginTop: 10 }} />
-            </Card>
-          ))}
+          <View style={s.cardsWrap}>
+            {suggestions.map((sug, idx) => (
+              <View key={idx} style={s.propCard}>
+                <View style={s.propHeader}>
+                  <View style={s.propBadge}>
+                    <Text style={s.propBadgeText}>{idx + 1}</Text>
+                  </View>
+                  <Text style={s.propTitle} accessibilityRole="header">
+                    Propozycja {idx + 1}
+                  </Text>
+                  <Text style={s.propCount}>{sug.items.length} części</Text>
+                </View>
+
+                <View style={s.itemsGrid}>
+                  {sug.items.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={s.gridItem}
+                      onPress={() => navigation.navigate('Szafa', { screen: 'ItemDetail', params: { id: item.id } })}
+                      accessibilityRole="imagebutton"
+                      accessibilityLabel={item.name}
+                    >
+                      <ItemThumb item={item} size={76} />
+                      <Text numberOfLines={2} style={s.gridItemLabel}>
+                        {item.favorite ? '❤️ ' : ''}
+                        {item.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {sug.explanation.length > 0 && (
+                  <View style={s.explanationBox}>
+                    {sug.explanation.map((e, i) => (
+                      <Text key={i} style={s.explanation}>
+                        • {e}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+                {sug.missing.length > 0 && (
+                  <Text style={s.missing}>
+                    Brakuje w szafie: {sug.missing.join(', ')} — sprawdź zakładkę Więcej → Czego brakuje.
+                  </Text>
+                )}
+                <PrimaryButton
+                  title="Zapisz kompozycję"
+                  icon="content-save-outline"
+                  variant="outline"
+                  onPress={() => saveSuggestion(sug)}
+                  style={{ marginTop: 12 }}
+                />
+              </View>
+            ))}
+          </View>
         </View>
       )}
     </ScrollView>
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  cardTitle: { fontWeight: '700', color: theme.colors.text, marginBottom: 8, fontSize: 15 },
-  resultsTitle: { fontSize: 18, fontWeight: '700', color: theme.colors.text, marginBottom: 10 },
-  input: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    fontSize: 15,
-    color: theme.colors.text,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  explanation: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 3 },
-  missing: { color: theme.colors.danger, fontSize: 13, marginTop: 6 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    cardTitle: { fontWeight: '700', color: theme.colors.text, marginBottom: 8, fontSize: 15 },
+    resultsTitle: { fontSize: 18, fontWeight: '700', color: theme.colors.text, marginBottom: 10 },
+    input: {
+      backgroundColor: theme.colors.card,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.sm,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      fontSize: 15,
+      color: theme.colors.text,
+    },
+    switchRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    explanationBox: {
+      backgroundColor: theme.colors.cardAlt,
+      borderRadius: theme.radius.sm,
+      padding: 10,
+      marginTop: 4,
+    },
+    explanation: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 3, lineHeight: 18 },
+    missing: { color: theme.colors.danger, fontSize: 13, marginTop: 8 },
+    // karty propozycji
+    cardsWrap: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6 },
+    propCard: {
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: theme.spacing.lg,
+      marginBottom: theme.spacing.md,
+      marginHorizontal: 6,
+      flexGrow: 1,
+      flexBasis: 320,
+    },
+    propHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    propBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 8,
+    },
+    propBadgeText: { color: theme.colors.onPrimary, fontWeight: '800', fontSize: 14 },
+    propTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: theme.colors.text },
+    propCount: { fontSize: 12, color: theme.colors.textMuted },
+    itemsGrid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -5 },
+    gridItem: { width: 86, alignItems: 'center', marginHorizontal: 5, marginBottom: 10 },
+    gridItemLabel: { fontSize: 11, color: theme.colors.text, marginTop: 4, textAlign: 'center' },
+  });

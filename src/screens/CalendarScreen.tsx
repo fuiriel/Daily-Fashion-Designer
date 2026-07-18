@@ -15,17 +15,20 @@ import { Card, Chip, ChipRow, EmptyState, ItemThumb, PrimaryButton } from '../co
 import { TIMES_OF_DAY } from '../data/constants';
 import { DailyForecast, fetchDailyForecast, geocodeCity } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { Outfit, TimeOfDay } from '../types';
 import { formatDatePl, todayISO as todayISOFn } from '../utils/date';
 
 export default function CalendarScreen({ navigation, route }: any) {
-  const outfits = useAppStore((s) => s.outfits);
-  const items = useAppStore((s) => s.items);
-  const plans = useAppStore((s) => s.plans);
-  const addPlan = useAppStore((s) => s.addPlan);
-  const removePlan = useAppStore((s) => s.removePlan);
-  const prefs = useAppStore((s) => s.prefs);
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
+  const outfits = useAppStore((st) => st.outfits);
+  const items = useAppStore((st) => st.items);
+  const plans = useAppStore((st) => st.plans);
+  const addPlan = useAppStore((st) => st.addPlan);
+  const removePlan = useAppStore((st) => st.removePlan);
+  const prefs = useAppStore((st) => st.prefs);
 
   const todayISO = todayISOFn();
   const [selectedDate, setSelectedDate] = useState(todayISO);
@@ -267,7 +270,8 @@ export default function CalendarScreen({ navigation, route }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   dayTitle: { fontSize: 16, fontWeight: '700', color: theme.colors.text },
   forecastBadge: {

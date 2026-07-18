@@ -5,12 +5,15 @@ import { showDialog } from '../utils/dialog';
 import { Chip, ChipRow, EmptyState, Field, ItemThumb, PrimaryButton, Section } from '../components/ui';
 import { MAIN_CATEGORIES, OCCASIONS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { MainCategory, Occasion } from '../types';
 
 export default function OutfitBuilderScreen({ navigation }: any) {
-  const items = useAppStore((s) => s.items);
-  const addOutfit = useAppStore((s) => s.addOutfit);
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
+  const items = useAppStore((st) => st.items);
+  const addOutfit = useAppStore((st) => st.addOutfit);
 
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
@@ -114,7 +117,8 @@ export default function OutfitBuilderScreen({ navigation }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
   gridItem: {
@@ -126,7 +130,7 @@ const s = StyleSheet.create({
     borderColor: 'transparent',
     alignItems: 'center',
   },
-  gridItemSelected: { borderColor: theme.colors.primary, backgroundColor: '#F7EAEC' },
-  check: { position: 'absolute', top: 2, right: 2, backgroundColor: '#fff', borderRadius: 11 },
+  gridItemSelected: { borderColor: theme.colors.primary, backgroundColor: theme.colors.cardAlt },
+  check: { position: 'absolute', top: 2, right: 2, backgroundColor: theme.colors.card, borderRadius: 11 },
   gridLabel: { fontSize: 11, color: theme.colors.text, marginTop: 3, maxWidth: 84 },
 });

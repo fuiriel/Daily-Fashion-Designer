@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { MONTHS, monthGrid, toISO, WEEKDAYS } from '../utils/date';
 
 interface Props {
@@ -22,6 +23,8 @@ export default function CalendarGrid({
   maxISO,
   markedDates,
 }: Props) {
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
   const initial = selectedISO ? new Date(`${selectedISO}T12:00:00`) : new Date();
   const [cursor, setCursor] = useState({ year: initial.getFullYear(), month: initial.getMonth() });
   const grid = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor]);
@@ -84,7 +87,8 @@ export default function CalendarGrid({
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   monthHeader: {
     flexDirection: 'row',
     alignItems: 'center',

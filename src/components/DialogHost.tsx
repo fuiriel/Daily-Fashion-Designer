@@ -1,7 +1,8 @@
 import React from 'react';
 import { Modal, StyleSheet, Text, View } from 'react-native';
 import { DialogButton, useDialogStore } from '../store/useDialogStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useThemedStyles } from '../theme/ThemeContext';
 import { PrimaryButton } from './ui';
 
 function variantFor(style?: DialogButton['style']): 'primary' | 'outline' | 'danger' {
@@ -12,11 +13,12 @@ function variantFor(style?: DialogButton['style']): 'primary' | 'outline' | 'dan
 
 // Renderuje własne okno dialogowe aplikacji. Montowane raz w App.tsx.
 export default function DialogHost() {
-  const visible = useDialogStore((s) => s.visible);
-  const title = useDialogStore((s) => s.title);
-  const message = useDialogStore((s) => s.message);
-  const buttons = useDialogStore((s) => s.buttons);
-  const hide = useDialogStore((s) => s.hide);
+  const s = useThemedStyles(makeStyles);
+  const visible = useDialogStore((v) => v.visible);
+  const title = useDialogStore((v) => v.title);
+  const message = useDialogStore((v) => v.message);
+  const buttons = useDialogStore((v) => v.buttons);
+  const hide = useDialogStore((v) => v.hide);
 
   const press = (b: DialogButton) => {
     hide();
@@ -49,22 +51,25 @@ export default function DialogHost() {
   );
 }
 
-const s = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.xl,
-  },
-  title: { fontSize: 18, fontWeight: '800', color: theme.colors.text, marginBottom: 8 },
-  message: { fontSize: 15, lineHeight: 21, color: theme.colors.textMuted, marginBottom: 8 },
-  buttons: { flexDirection: 'row', marginTop: 16 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: theme.colors.overlay,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    card: {
+      width: '100%',
+      maxWidth: 420,
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.xl,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    title: { fontSize: 18, fontWeight: '800', color: theme.colors.text, marginBottom: 8 },
+    message: { fontSize: 15, lineHeight: 21, color: theme.colors.textMuted, marginBottom: 8 },
+    buttons: { flexDirection: 'row', marginTop: 16 },
+  });

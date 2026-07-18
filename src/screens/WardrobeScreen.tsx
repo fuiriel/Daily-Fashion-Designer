@@ -4,10 +4,13 @@ import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'r
 import { Chip, ChipRow, ColorDots, EmptyState, ItemThumb } from '../components/ui';
 import { MAIN_CATEGORIES } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { MainCategory, WardrobeItem } from '../types';
 
 export default function WardrobeScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const items = useAppStore((s) => s.items);
   const toggleFavorite = useAppStore((s) => s.toggleItemFavorite);
   const [category, setCategory] = useState<MainCategory | 'wszystko' | 'ulubione'>('wszystko');
@@ -92,14 +95,15 @@ export default function WardrobeScreen({ navigation }: any) {
           />
         }
       />
-      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('ItemForm', {})}>
-        <MaterialCommunityIcons name="plus" size={30} color="#fff" />
+      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('ItemForm', {})} accessibilityRole="button" accessibilityLabel="Dodaj rzecz">
+        <MaterialCommunityIcons name="plus" size={30} color={theme.colors.onPrimary} />
       </TouchableOpacity>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   search: {
     margin: 16,

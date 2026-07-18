@@ -6,10 +6,13 @@ import { Card, EmptyState, ItemThumb, PrimaryButton } from '../components/ui';
 import { buildPackingList, PackingList } from '../logic/packing';
 import { fetchDailyForecast, geocodeCity } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 
 export default function TripScreen({ navigation }: any) {
-  const items = useAppStore((s) => s.items);
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
+  const items = useAppStore((st) => st.items);
   const [destination, setDestination] = useState('');
   const [days, setDays] = useState('7');
   const [loading, setLoading] = useState(false);
@@ -118,7 +121,8 @@ export default function TripScreen({ navigation }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   cardTitle: { fontWeight: '700', color: theme.colors.text, marginBottom: 8, fontSize: 15 },
   input: {

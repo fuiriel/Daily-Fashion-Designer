@@ -5,13 +5,16 @@ import { showDialog } from '../utils/dialog';
 import { Card, Chip, ChipRow, ColorDots, PrimaryButton } from '../components/ui';
 import { WARMTH_LABELS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 
 export default function ItemDetailScreen({ navigation, route }: any) {
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
   const id: string = route.params.id;
-  const item = useAppStore((s) => s.items.find((i) => i.id === id));
-  const removeItem = useAppStore((s) => s.removeItem);
-  const toggleFavorite = useAppStore((s) => s.toggleItemFavorite);
+  const item = useAppStore((st) => st.items.find((i) => i.id === id));
+  const removeItem = useAppStore((st) => st.removeItem);
+  const toggleFavorite = useAppStore((st) => st.toggleItemFavorite);
 
   if (!item) {
     return (
@@ -108,7 +111,8 @@ export default function ItemDetailScreen({ navigation, route }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   photo: { width: 200, height: 200, borderRadius: theme.radius.lg },
   photoPlaceholder: {

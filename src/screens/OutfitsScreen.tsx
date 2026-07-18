@@ -4,14 +4,17 @@ import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from '
 import { showDialog } from '../utils/dialog';
 import { EmptyState, ItemThumb } from '../components/ui';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { Outfit } from '../types';
 
 export default function OutfitsScreen({ navigation }: any) {
-  const outfits = useAppStore((s) => s.outfits);
-  const items = useAppStore((s) => s.items);
-  const toggleFavorite = useAppStore((s) => s.toggleOutfitFavorite);
-  const removeOutfit = useAppStore((s) => s.removeOutfit);
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
+  const outfits = useAppStore((st) => st.outfits);
+  const items = useAppStore((st) => st.items);
+  const toggleFavorite = useAppStore((st) => st.toggleOutfitFavorite);
+  const removeOutfit = useAppStore((st) => st.removeOutfit);
   const [onlyFavorites, setOnlyFavorites] = useState(false);
 
   const list = onlyFavorites ? outfits.filter((o) => o.favorite) : outfits;
@@ -83,8 +86,8 @@ export default function OutfitsScreen({ navigation }: any) {
           onPress={() => setOnlyFavorites(!onlyFavorites)}
           style={[s.filterBtn, onlyFavorites && { backgroundColor: theme.colors.primary }]}
         >
-          <MaterialCommunityIcons name="heart" size={16} color={onlyFavorites ? '#fff' : theme.colors.text} />
-          <Text style={{ marginLeft: 6, color: onlyFavorites ? '#fff' : theme.colors.text, fontSize: 13 }}>
+          <MaterialCommunityIcons name="heart" size={16} color={onlyFavorites ? theme.colors.onPrimary : theme.colors.text} />
+          <Text style={{ marginLeft: 6, color: onlyFavorites ? theme.colors.onPrimary : theme.colors.text, fontSize: 13 }}>
             Tylko ulubione
           </Text>
         </TouchableOpacity>
@@ -101,14 +104,15 @@ export default function OutfitsScreen({ navigation }: any) {
           />
         }
       />
-      <TouchableOpacity style={s.fab} onPress={() => navigation.navigate('OutfitBuilder')}>
-        <MaterialCommunityIcons name="plus" size={30} color="#fff" />
+      <TouchableOpacity style={s.fab} onPress={() => navigation.navigate('OutfitBuilder')} accessibilityRole="button" accessibilityLabel="Nowa kompozycja">
+        <MaterialCommunityIcons name="plus" size={30} color={theme.colors.onPrimary} />
       </TouchableOpacity>
     </View>
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   card: {
     backgroundColor: theme.colors.card,

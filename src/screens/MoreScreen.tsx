@@ -7,20 +7,31 @@ import { Card, Chip, ChipRow, PrimaryButton, Section } from '../components/ui';
 import { STYLES } from '../data/constants';
 import { analyzeGaps } from '../logic/gaps';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+
+const THEME_OPTIONS: { key: 'system' | 'light' | 'dark'; label: string; icon: string }[] = [
+  { key: 'system', label: 'System', icon: 'theme-light-dark' },
+  { key: 'light', label: 'Jasny', icon: 'white-balance-sunny' },
+  { key: 'dark', label: 'Ciemny', icon: 'weather-night' },
+];
 
 export default function MoreScreen() {
-  const items = useAppStore((s) => s.items);
-  const stores = useAppStore((s) => s.stores);
-  const expenses = useAppStore((s) => s.expenses);
-  const prefs = useAppStore((s) => s.prefs);
-  const setPrefs = useAppStore((s) => s.setPrefs);
-  const addStore = useAppStore((s) => s.addStore);
-  const removeStore = useAppStore((s) => s.removeStore);
-  const toggleStoreFavorite = useAppStore((s) => s.toggleStoreFavorite);
-  const addExpense = useAppStore((s) => s.addExpense);
-  const removeExpense = useAppStore((s) => s.removeExpense);
-  const resetOnboarding = useAppStore((s) => s.resetOnboarding);
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
+  const items = useAppStore((st) => st.items);
+  const stores = useAppStore((st) => st.stores);
+  const expenses = useAppStore((st) => st.expenses);
+  const prefs = useAppStore((st) => st.prefs);
+  const setPrefs = useAppStore((st) => st.setPrefs);
+  const addStore = useAppStore((st) => st.addStore);
+  const removeStore = useAppStore((st) => st.removeStore);
+  const toggleStoreFavorite = useAppStore((st) => st.toggleStoreFavorite);
+  const addExpense = useAppStore((st) => st.addExpense);
+  const removeExpense = useAppStore((st) => st.removeExpense);
+  const resetOnboarding = useAppStore((st) => st.resetOnboarding);
+  const themeMode = useAppStore((st) => st.themeMode);
+  const setThemeMode = useAppStore((st) => st.setThemeMode);
 
   const [showGaps, setShowGaps] = useState(false);
   const [newStore, setNewStore] = useState('');
@@ -57,6 +68,33 @@ export default function MoreScreen() {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <Section title="Wygląd">
+        <Text style={s.hint}>Motyw aplikacji. „System" dopasowuje się do ustawień telefonu/przeglądarki.</Text>
+        <View style={s.segment}>
+          {THEME_OPTIONS.map((opt) => {
+            const active = themeMode === opt.key;
+            return (
+              <TouchableOpacity
+                key={opt.key}
+                onPress={() => setThemeMode(opt.key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                style={[s.segmentBtn, active && s.segmentBtnActive]}
+              >
+                <MaterialCommunityIcons
+                  name={opt.icon as any}
+                  size={18}
+                  color={active ? theme.colors.onPrimary : theme.colors.text}
+                />
+                <Text style={[s.segmentText, active && { color: theme.colors.onPrimary, fontWeight: '700' }]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </Section>
+
       <Section title="Mój styl">
         <Text style={s.hint}>Ulubione style są podpowiadane styliście przy każdej propozycji.</Text>
         <ChipRow>
@@ -213,11 +251,29 @@ export default function MoreScreen() {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   cardTitle: { fontWeight: '700', color: theme.colors.text, marginBottom: 8, fontSize: 15 },
   hint: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 8 },
   switchRow: { flexDirection: 'row', alignItems: 'center' },
+  segment: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.chipBg,
+    borderRadius: theme.radius.md,
+    padding: 4,
+  },
+  segmentBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: theme.radius.sm,
+    minHeight: 44,
+  },
+  segmentBtnActive: { backgroundColor: theme.colors.primary },
+  segmentText: { marginLeft: 6, color: theme.colors.text, fontSize: 14 },
   statRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   statLabel: { color: theme.colors.textMuted },
   statValue: { color: theme.colors.text, fontWeight: '700' },

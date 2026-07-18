@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { formatDatePl, todayISO } from '../utils/date';
 import CalendarGrid from './CalendarGrid';
 import { PrimaryButton } from './ui';
@@ -25,6 +26,8 @@ export default function DatePickerField({
   maxISO,
   minISO,
 }: Props) {
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
   const [open, setOpen] = useState(false);
   const today = todayISO();
   const max = maxISO ?? today;
@@ -85,29 +88,32 @@ export default function DatePickerField({
   );
 }
 
-const s = StyleSheet.create({
-  label: { fontSize: 13, color: theme.colors.textMuted, marginBottom: 4 },
-  input: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-  },
-  value: { flex: 1, marginLeft: 8, fontSize: 15, color: theme.colors.text },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  sheet: {
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.radius.lg,
-    padding: 16,
-  },
-  hint: { color: theme.colors.textMuted, fontSize: 12, marginTop: 8 },
-});
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
+    label: { fontSize: 13, color: theme.colors.textMuted, marginBottom: 4 },
+    input: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: theme.radius.sm,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+    },
+    value: { flex: 1, marginLeft: 8, fontSize: 15, color: theme.colors.text },
+    backdrop: {
+      flex: 1,
+      backgroundColor: theme.colors.overlay,
+      justifyContent: 'center',
+      padding: 20,
+    },
+    sheet: {
+      backgroundColor: theme.colors.background,
+      borderRadius: theme.radius.lg,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    hint: { color: theme.colors.textMuted, fontSize: 12, marginTop: 8 },
+  });

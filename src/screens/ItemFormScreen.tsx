@@ -16,7 +16,8 @@ import {
   WARMTH_LABELS,
 } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { MainCategory, Occasion, Pattern, Season, StyleTag, WardrobeItem } from '../types';
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -24,6 +25,8 @@ function toggle<T>(list: T[], value: T): T[] {
 }
 
 export default function ItemFormScreen({ navigation, route }: any) {
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
   const editId: string | undefined = route.params?.id;
   const existing = useAppStore((s) => s.items.find((i) => i.id === editId));
   const addItem = useAppStore((s) => s.addItem);
@@ -216,7 +219,8 @@ export default function ItemFormScreen({ navigation, route }: any) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   photo: { width: 110, height: 110, borderRadius: theme.radius.md },
   photoPlaceholder: {

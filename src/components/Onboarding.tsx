@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Dimensions, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '../theme';
+import { Theme } from '../theme';
+import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { PrimaryButton } from './ui';
 
 interface Slide {
@@ -34,6 +35,8 @@ const SLIDES: Slide[] = [
 ];
 
 export default function Onboarding({ onDone }: { onDone: () => void }) {
+  const { theme } = useTheme();
+  const s = useThemedStyles(makeStyles);
   const [index, setIndex] = useState(0);
   const isLast = index === SLIDES.length - 1;
   const slide = SLIDES[index];
@@ -78,7 +81,8 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
   );
 }
 
-const s = StyleSheet.create({
+const makeStyles = (theme: Theme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

@@ -16,9 +16,11 @@ interface AppState {
   plans: PlannedOutfit[];
   prefs: UserPrefs;
   onboardingDone: boolean;
+  themeMode: 'system' | 'light' | 'dark';
 
   completeOnboarding: () => void;
   resetOnboarding: () => void;
+  setThemeMode: (mode: 'system' | 'light' | 'dark') => void;
 
   addItem: (item: Omit<WardrobeItem, 'id' | 'createdAt'>) => WardrobeItem;
   updateItem: (id: string, patch: Partial<WardrobeItem>) => void;
@@ -54,9 +56,11 @@ export const useAppStore = create<AppState>()(
       plans: [],
       prefs: { favoriteStyles: [] },
       onboardingDone: false,
+      themeMode: 'system',
 
       completeOnboarding: () => set({ onboardingDone: true }),
       resetOnboarding: () => set({ onboardingDone: false }),
+      setThemeMode: (mode) => set({ themeMode: mode }),
 
       addItem: (data) => {
         const item: WardrobeItem = { ...data, id: uid(), createdAt: new Date().toISOString() };
