@@ -12,6 +12,7 @@ import { fetchCurrentWeather, geocodeCity, manualWeather } from '../services/wea
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 import { BottomPreference, Occasion, OutfitSuggestion, StyleTag, TimeOfDay, WeatherInfo } from '../types';
 
 function defaultTimeOfDay(): TimeOfDay {
@@ -25,6 +26,7 @@ function defaultTimeOfDay(): TimeOfDay {
 export default function StylistScreen({ navigation }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const items = useAppStore((st) => st.items);
   const stores = useAppStore((st) => st.stores);
   const prefs = useAppStore((st) => st.prefs);
@@ -119,7 +121,7 @@ export default function StylistScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Card>
         <Text style={s.cardTitle}>Pogoda</Text>
         {effectiveWeather ? (

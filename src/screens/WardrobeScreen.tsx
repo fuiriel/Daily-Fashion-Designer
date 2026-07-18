@@ -6,11 +6,14 @@ import { MAIN_CATEGORIES } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle, useIsWide } from '../theme/responsive';
 import { MainCategory, WardrobeItem } from '../types';
 
 export default function WardrobeScreen({ navigation }: any) {
   const { theme } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
+  const isWide = useIsWide();
   const items = useAppStore((s) => s.items);
   const toggleFavorite = useAppStore((s) => s.toggleItemFavorite);
   const [category, setCategory] = useState<MainCategory | 'wszystko' | 'ulubione'>('wszystko');
@@ -35,7 +38,7 @@ export default function WardrobeScreen({ navigation }: any) {
 
   const renderItem = ({ item }: { item: WardrobeItem }) => (
     <TouchableOpacity
-      style={styles.row}
+      style={[styles.row, isWide && { flex: 1, marginHorizontal: 6 }]}
       onPress={() => navigation.navigate('ItemDetail', { id: item.id })}
     >
       <ItemThumb item={item} size={64} />
@@ -59,31 +62,35 @@ export default function WardrobeScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.search}
-        placeholder="Szukaj w szafie..."
-        placeholderTextColor={theme.colors.textMuted}
-        value={query}
-        onChangeText={setQuery}
-      />
-      <ChipRow style={{ paddingHorizontal: 16 }}>
-        <Chip label="Wszystko" selected={category === 'wszystko'} onPress={() => setCategory('wszystko')} />
-        {MAIN_CATEGORIES.map((c) => (
-          <Chip
-            key={c.key}
-            label={c.label}
-            icon={c.icon}
-            selected={category === c.key}
-            onPress={() => setCategory(c.key)}
-          />
-        ))}
-        <Chip label="Ulubione" icon="heart" selected={category === 'ulubione'} onPress={() => setCategory('ulubione')} />
-      </ChipRow>
+      <View style={contentStyle ? [contentStyle, { width: '100%' }] : undefined}>
+        <TextInput
+          style={styles.search}
+          placeholder="Szukaj w szafie..."
+          placeholderTextColor={theme.colors.textMuted}
+          value={query}
+          onChangeText={setQuery}
+        />
+        <ChipRow style={{ paddingHorizontal: 16 }}>
+          <Chip label="Wszystko" selected={category === 'wszystko'} onPress={() => setCategory('wszystko')} />
+          {MAIN_CATEGORIES.map((c) => (
+            <Chip
+              key={c.key}
+              label={c.label}
+              icon={c.icon}
+              selected={category === c.key}
+              onPress={() => setCategory(c.key)}
+            />
+          ))}
+          <Chip label="Ulubione" icon="heart" selected={category === 'ulubione'} onPress={() => setCategory('ulubione')} />
+        </ChipRow>
+      </View>
       <FlatList
+        key={isWide ? 'cols2' : 'cols1'}
+        numColumns={isWide ? 2 : 1}
         data={filtered}
         keyExtractor={(i) => i.id}
         renderItem={renderItem}
-        contentContainerStyle={{ padding: 16, paddingBottom: 90 }}
+        contentContainerStyle={[{ padding: 16, paddingBottom: 90 }, contentStyle]}
         ListEmptyComponent={
           <EmptyState
             icon="wardrobe-outline"

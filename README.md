@@ -47,6 +47,12 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - Rejestr wydatków, budżet miesięczny z ostrzeżeniem o przekroczeniu, wartość szafy
 - Lista ulubionych sklepów
 
+### 🌓 Wygląd
+- **Tryb ciemny**: Więcej → Wygląd (System / Jasny / Ciemny) — działa na
+  telefonie i w przeglądarce, „System" podąża za ustawieniami urządzenia
+- **Responsywny interfejs**: w oknach ≥ 768 px nawigacja przenosi się na boczny
+  pasek, a treść jest wyśrodkowana; poniżej 768 px klasyczny układ mobilny
+
 ### 🚀 Pierwsze uruchomienie
 - Przy pierwszym otwarciu aplikacja pokazuje krótkie wprowadzenie (4 ekrany) —
   można je w każdej chwili **pominąć**, a później wywołać ponownie w zakładce

@@ -17,12 +17,14 @@ import { DailyForecast, fetchDailyForecast, geocodeCity } from '../services/weat
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 import { Outfit, TimeOfDay } from '../types';
 import { formatDatePl, todayISO as todayISOFn } from '../utils/date';
 
 export default function CalendarScreen({ navigation, route }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const outfits = useAppStore((st) => st.outfits);
   const items = useAppStore((st) => st.items);
   const plans = useAppStore((st) => st.plans);
@@ -113,7 +115,7 @@ export default function CalendarScreen({ navigation, route }: any) {
   const pendingOutfit = pendingOutfitId ? outfitById(pendingOutfitId) : undefined;
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       {pendingOutfit && (
         <Card style={{ borderColor: theme.colors.primary }}>
           <Text style={s.planName}>Planowanie: {pendingOutfit.name}</Text>

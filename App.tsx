@@ -3,7 +3,8 @@ import { DarkTheme, DefaultTheme, NavigationContainer, Theme as NavTheme } from 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import DialogHost from './src/components/DialogHost';
 import Onboarding from './src/components/Onboarding';
@@ -19,6 +20,7 @@ import TripScreen from './src/screens/TripScreen';
 import WardrobeScreen from './src/screens/WardrobeScreen';
 import { Theme } from './src/theme';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+import { useIsWide } from './src/theme/responsive';
 
 const Tab = createBottomTabNavigator();
 const WardrobeStack = createNativeStackNavigator();
@@ -79,8 +81,27 @@ function navigationTheme(theme: Theme): NavTheme {
   };
 }
 
+// Widoczny stan focus dla nawigacji klawiaturą w przeglądarce (WCAG 2.4.7).
+function useWebFocusStyles(focusColor: string) {
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const style = document.createElement('style');
+    style.textContent = `
+      :focus-visible { outline: 2px solid ${focusColor} !important; outline-offset: 2px; }
+      html { scroll-behavior: smooth; }
+    `;
+    document.head.appendChild(style);
+    document.documentElement.lang = 'pl';
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, [focusColor]);
+}
+
 function AppInner() {
   const { theme, isDark } = useTheme();
+  const isWide = useIsWide();
+  useWebFocusStyles(theme.colors.focus);
   const hydrated = useHydrated();
   const onboardingDone = useAppStore((s) => s.onboardingDone);
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
@@ -98,7 +119,19 @@ function AppInner() {
           sceneContainerStyle: { backgroundColor: theme.colors.background },
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: theme.colors.textMuted,
-          tabBarStyle: { backgroundColor: theme.colors.card, borderTopColor: theme.colors.border },
+          // >=768 px: boczny pasek nawigacji (navigation rail); węziej: dolne zakładki
+          tabBarPosition: isWide ? 'left' : 'bottom',
+          tabBarVariant: isWide ? 'material' : 'uikit',
+          tabBarLabelPosition: isWide ? 'below-icon' : undefined,
+          tabBarStyle: isWide
+            ? {
+                backgroundColor: theme.colors.card,
+                borderRightColor: theme.colors.border,
+                borderRightWidth: 1,
+                paddingTop: 12,
+                minWidth: 96,
+              }
+            : { backgroundColor: theme.colors.card, borderTopColor: theme.colors.border },
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name={TAB_ICONS[route.name] as any} size={size} color={color} />
           ),

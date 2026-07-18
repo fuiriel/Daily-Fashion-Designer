@@ -9,6 +9,7 @@ import { analyzeGaps } from '../logic/gaps';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 
 const THEME_OPTIONS: { key: 'system' | 'light' | 'dark'; label: string; icon: string }[] = [
   { key: 'system', label: 'System', icon: 'theme-light-dark' },
@@ -19,6 +20,7 @@ const THEME_OPTIONS: { key: 'system' | 'light' | 'dark'; label: string; icon: st
 export default function MoreScreen() {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const items = useAppStore((st) => st.items);
   const stores = useAppStore((st) => st.stores);
   const expenses = useAppStore((st) => st.expenses);
@@ -67,7 +69,7 @@ export default function MoreScreen() {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Section title="Wygląd">
         <Text style={s.hint}>Motyw aplikacji. „System" dopasowuje się do ustawień telefonu/przeglądarki.</Text>
         <View style={s.segment}>

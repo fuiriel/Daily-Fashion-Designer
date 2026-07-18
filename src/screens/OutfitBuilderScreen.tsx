@@ -7,11 +7,13 @@ import { MAIN_CATEGORIES, OCCASIONS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 import { MainCategory, Occasion } from '../types';
 
 export default function OutfitBuilderScreen({ navigation }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const items = useAppStore((st) => st.items);
   const addOutfit = useAppStore((st) => st.addOutfit);
 
@@ -64,7 +66,7 @@ export default function OutfitBuilderScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Field label="Nazwa kompozycji" value={name} onChangeText={setName} placeholder="np. Piątkowe wyjście" />
       <Field label="Notatka" value={note} onChangeText={setNote} placeholder="np. dodać czerwoną szminkę" />
 

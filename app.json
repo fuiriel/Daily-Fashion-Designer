@@ -28,7 +28,8 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
       "output": "single",
-      "name": "Daily Fashion Designer"
+      "name": "Daily Fashion Designer",
+      "lang": "pl"
     },
     "plugins": [
       [

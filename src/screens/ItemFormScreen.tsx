@@ -18,6 +18,7 @@ import {
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 import { MainCategory, Occasion, Pattern, Season, StyleTag, WardrobeItem } from '../types';
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -27,6 +28,7 @@ function toggle<T>(list: T[], value: T): T[] {
 export default function ItemFormScreen({ navigation, route }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const editId: string | undefined = route.params?.id;
   const existing = useAppStore((s) => s.items.find((i) => i.id === editId));
   const addItem = useAppStore((s) => s.addItem);
@@ -100,7 +102,7 @@ export default function ItemFormScreen({ navigation, route }: any) {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Section title="Zdjęcie">
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {photoUri ? (

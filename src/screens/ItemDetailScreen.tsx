@@ -7,10 +7,12 @@ import { WARMTH_LABELS } from '../data/constants';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 
 export default function ItemDetailScreen({ navigation, route }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const id: string = route.params.id;
   const item = useAppStore((st) => st.items.find((i) => i.id === id));
   const removeItem = useAppStore((st) => st.removeItem);
@@ -46,7 +48,7 @@ export default function ItemDetailScreen({ navigation, route }: any) {
     ) : null;
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <View style={{ alignItems: 'center', marginBottom: 16 }}>
         {item.photoUri ? (
           <Image source={{ uri: item.photoUri }} style={s.photo} />

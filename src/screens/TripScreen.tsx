@@ -8,10 +8,12 @@ import { fetchDailyForecast, geocodeCity } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 
 export default function TripScreen({ navigation }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const items = useAppStore((st) => st.items);
   const [destination, setDestination] = useState('');
   const [days, setDays] = useState('7');
@@ -43,7 +45,7 @@ export default function TripScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Card>
         <Text style={s.cardTitle}>Co spakować na wyjazd?</Text>
         <Text style={{ color: theme.colors.textMuted, marginBottom: 10, fontSize: 13 }}>

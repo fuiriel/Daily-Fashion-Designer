@@ -6,11 +6,13 @@ import { EmptyState, ItemThumb } from '../components/ui';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
+import { useContentStyle } from '../theme/responsive';
 import { Outfit } from '../types';
 
 export default function OutfitsScreen({ navigation }: any) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const contentStyle = useContentStyle();
   const outfits = useAppStore((st) => st.outfits);
   const items = useAppStore((st) => st.items);
   const toggleFavorite = useAppStore((st) => st.toggleOutfitFavorite);
@@ -96,7 +98,7 @@ export default function OutfitsScreen({ navigation }: any) {
         data={list}
         keyExtractor={(o) => o.id}
         renderItem={renderOutfit}
-        contentContainerStyle={{ padding: 16, paddingBottom: 90 }}
+        contentContainerStyle={[{ padding: 16, paddingBottom: 90 }, contentStyle]}
         ListEmptyComponent={
           <EmptyState
             icon="hanger"
