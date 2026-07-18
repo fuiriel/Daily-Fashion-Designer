@@ -38,7 +38,7 @@ export default function CalendarGrid({
   };
 
   return (
-    <View>
+    <View style={s.root}>
       <View style={s.monthHeader}>
         <TouchableOpacity onPress={() => changeMonth(-1)} hitSlop={10} accessibilityRole="button">
           <MaterialCommunityIcons name="chevron-left" size={28} color={theme.colors.text} />
@@ -97,6 +97,8 @@ export default function CalendarGrid({
 
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
+    // ograniczenie szerokości: na dużych oknach komórki dni nie rosną bez końca
+    root: { width: '100%', maxWidth: 420, alignSelf: 'center' },
     monthHeader: {
       flexDirection: 'row',
       alignItems: 'center',
