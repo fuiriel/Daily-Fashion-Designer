@@ -44,6 +44,17 @@ export type TimeOfDay = 'rano' | 'dzień' | 'wieczór' | 'noc';
 
 export type BottomPreference = 'dowolnie' | 'sukienka' | 'spodnie' | 'spódnica';
 
+// Status rzeczy w szafie. Tylko 'aktywna' bierze udział w stylizacjach,
+// analizie braków i pakowaniu.
+export type ItemStatus = 'aktywna' | 'zarchiwizowana' | 'zwrócona' | 'sprzedana' | 'wyrzucona';
+
+export interface Catalog {
+  id: string;
+  name: string; // własna nazwa, np. „Do sprzedania"
+}
+
+export type Language = 'pl' | 'en';
+
 export interface WardrobeItem {
   id: string;
   name: string;
@@ -64,7 +75,13 @@ export interface WardrobeItem {
   seasons: Season[]; // puste = całoroczne
   warmth: 1 | 2 | 3 | 4 | 5; // 1 = bardzo lekkie, 5 = bardzo ciepłe
   waterproof?: boolean;
+  status?: ItemStatus; // brak = 'aktywna'
+  catalogIds?: string[]; // przypisanie do katalogów użytkownika
   createdAt: string;
+}
+
+export function isItemActive(item: WardrobeItem): boolean {
+  return !item.status || item.status === 'aktywna';
 }
 
 export interface Outfit {
@@ -125,6 +142,7 @@ export interface StylistRequest {
   bottomPreference: BottomPreference;
   styles: StyleTag[];
   weather: WeatherInfo;
+  lang?: Language; // język wyjaśnień i komunikatów o brakach
 }
 
 export interface OutfitSuggestion {
@@ -134,8 +152,13 @@ export interface OutfitSuggestion {
   missing: string[]; // braki w szafie dla tej kompozycji
 }
 
+export interface GapStoreLink {
+  name: string;
+  url?: string; // adres sklepu (własny lub domyślny); brak = wyszukiwarka
+}
+
 export interface GapSuggestion {
-  what: string;
-  why: string;
-  whereToBuy: string[];
+  id: string; // klucz tekstów w i18n/labels GAP_TEXTS
+  icon: string; // ikona MaterialCommunityIcons wizualizująca część ubioru
+  whereToBuy: GapStoreLink[];
 }

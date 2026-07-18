@@ -185,10 +185,19 @@ export function suggestOutfits(
 
     if (needOuterwear) {
       if (outers.length) combo.push(outers[0]);
-      else missing.push(req.weather.isRain ? 'kurtka przeciwdeszczowa' : 'ciepła kurtka lub płaszcz');
+      else
+        missing.push(
+          req.lang === 'en'
+            ? req.weather.isRain
+              ? 'a rain jacket'
+              : 'a warm jacket or coat'
+            : req.weather.isRain
+            ? 'kurtka przeciwdeszczowa'
+            : 'ciepła kurtka lub płaszcz'
+        );
     }
     if (shoes.length) combo.push(shoes[0]);
-    else missing.push('buty pasujące do tej okazji');
+    else missing.push(req.lang === 'en' ? 'shoes matching this occasion' : 'buty pasujące do tej okazji');
 
     // 1-2 akcesoria; parasol przy deszczu ma pierwszeństwo
     const acc = accessories.filter((a) => {
@@ -199,7 +208,7 @@ export function suggestOutfits(
     });
     combo.push(...acc.slice(0, 2));
     if (req.weather.isRain && !acc.some((a) => a.subcategory === 'parasol')) {
-      missing.push('parasol');
+      missing.push(req.lang === 'en' ? 'an umbrella' : 'parasol');
     }
 
     let score = combo.reduce((sum, item) => sum + scoreItem(item, req, need), 0) / combo.length;
@@ -232,18 +241,29 @@ export function suggestOutfits(
 function explain(suggestion: OutfitSuggestion, req: StylistRequest, need: number): string[] {
   const notes: string[] = [];
   const w = req.weather;
+  const en = req.lang === 'en';
   notes.push(
-    `Pogoda: ${w.tempC}°C (odczuwalna ${w.feelsLikeC}°C), ${w.description} — dobrano rzeczy o cieple ~${need}/5.`
+    en
+      ? `Weather: ${w.tempC}°C (feels like ${w.feelsLikeC}°C), ${w.description} — picked items with warmth ~${need}/5.`
+      : `Pogoda: ${w.tempC}°C (odczuwalna ${w.feelsLikeC}°C), ${w.description} — dobrano rzeczy o cieple ~${need}/5.`
   );
-  if (w.isRain) notes.push('Zapowiada się deszcz — postaw na nieprzemakalne buty i parasol.');
-  if (w.isSnow) notes.push('Śnieg — ciepłe, kryte buty będą najlepsze.');
+  if (w.isRain)
+    notes.push(en ? 'Rain expected — go for waterproof shoes and an umbrella.' : 'Zapowiada się deszcz — postaw na nieprzemakalne buty i parasol.');
+  if (w.isSnow) notes.push(en ? 'Snow — warm, closed shoes are best.' : 'Śnieg — ciepłe, kryte buty będą najlepsze.');
   const favs = suggestion.items.filter((i) => i.favorite);
-  if (favs.length) notes.push(`Uwzględniono Twoje ulubione: ${favs.map((f) => f.name).join(', ')}.`);
+  if (favs.length)
+    notes.push(
+      en
+        ? `Included your favourites: ${favs.map((f) => f.name).join(', ')}.`
+        : `Uwzględniono Twoje ulubione: ${favs.map((f) => f.name).join(', ')}.`
+    );
   const styleMatch = suggestion.items.filter((i) => i.styles.some((s) => req.styles.includes(s)));
   if (req.styles.length && styleMatch.length)
-    notes.push(`Kompozycja trzyma się stylu: ${req.styles.join(', ')}.`);
-  if (req.occasion === 'pogrzeb') notes.push('Stonowane, ciemne kolory odpowiednie na tę okazję.');
-  if (req.occasion === 'wesele') notes.push('Elegancko, ale bez bieli — ta jest zarezerwowana dla panny młodej.');
+    notes.push(en ? `The look follows the style: ${req.styles.join(', ')}.` : `Stylizacja trzyma się stylu: ${req.styles.join(', ')}.`);
+  if (req.occasion === 'pogrzeb')
+    notes.push(en ? 'Subdued, dark colours appropriate for the occasion.' : 'Stonowane, ciemne kolory odpowiednie na tę okazję.');
+  if (req.occasion === 'wesele')
+    notes.push(en ? 'Elegant, but no white — that is reserved for the bride.' : 'Elegancko, ale bez bieli — ta jest zarezerwowana dla panny młodej.');
   return notes;
 }
 

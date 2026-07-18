@@ -1,11 +1,21 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { showDialog } from '../utils/dialog';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import GapSuggestions from '../components/GapSuggestions';
 import { Card, Chip, ChipRow, ItemThumb, PrimaryButton, Section } from '../components/ui';
-import { OCCASIONS, STYLES, TIMES_OF_DAY } from '../data/constants';
+import { OCCASIONS, STYLES, TIMES_OF_DAY, slotOf } from '../data/constants';
+import { useI18n } from '../i18n';
+import { bottomPrefLabel, occasionLabel, slotLabel, styleLabel, timeLabel } from '../i18n/labels';
 import { analyzeGaps } from '../logic/gaps';
 import { suggestOutfits } from '../logic/stylist';
 import { fetchCurrentWeather, geocodeCity, manualWeather } from '../services/weather';
@@ -13,7 +23,16 @@ import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
-import { BottomPreference, Occasion, OutfitSuggestion, StyleTag, TimeOfDay, WeatherInfo } from '../types';
+import { showDialog } from '../utils/dialog';
+import {
+  BottomPreference,
+  isItemActive,
+  Occasion,
+  OutfitSuggestion,
+  StyleTag,
+  TimeOfDay,
+  WeatherInfo,
+} from '../types';
 
 function defaultTimeOfDay(): TimeOfDay {
   const h = new Date().getHours();
@@ -25,13 +44,17 @@ function defaultTimeOfDay(): TimeOfDay {
 
 export default function StylistScreen({ navigation }: any) {
   const { theme } = useTheme();
+  const { t, lang } = useI18n();
   const s = useThemedStyles(makeStyles);
   const contentStyle = useContentStyle();
-  const items = useAppStore((st) => st.items);
+  const allItems = useAppStore((st) => st.items);
   const stores = useAppStore((st) => st.stores);
   const prefs = useAppStore((st) => st.prefs);
   const setPrefs = useAppStore((st) => st.setPrefs);
   const addOutfit = useAppStore((st) => st.addOutfit);
+
+  // stylizacje układamy tylko z aktywnych rzeczy
+  const items = useMemo(() => allItems.filter(isItemActive), [allItems]);
 
   const [occasion, setOccasion] = useState<Occasion>('codzienne');
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(defaultTimeOfDay());
@@ -45,16 +68,27 @@ export default function StylistScreen({ navigation }: any) {
   const [useManual, setUseManual] = useState(false);
   const [suggestions, setSuggestions] = useState<OutfitSuggestion[] | null>(null);
 
+  // auto-przewinięcie do sekcji wyników po wygenerowaniu propozycji
+  const scrollRef = useRef<ScrollView>(null);
+  const resultsY = useRef(0);
+  const pendingScroll = useRef(false);
+  useEffect(() => {
+    if (suggestions !== null && pendingScroll.current) {
+      pendingScroll.current = false;
+      setTimeout(() => scrollRef.current?.scrollTo({ y: Math.max(resultsY.current - 8, 0), animated: true }), 80);
+    }
+  }, [suggestions]);
+
   const loadWeatherByLocation = async () => {
     setLoadingWeather(true);
     try {
       const perm = await Location.requestForegroundPermissionsAsync();
-      if (!perm.granted) throw new Error('Brak zgody na lokalizację — wpisz miasto ręcznie.');
+      if (!perm.granted) throw new Error(t('stylist.locationDenied'));
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
-      const w = await fetchCurrentWeather(loc.coords.latitude, loc.coords.longitude, 'Twoja lokalizacja');
+      const w = await fetchCurrentWeather(loc.coords.latitude, loc.coords.longitude);
       setWeather(w);
     } catch (e: any) {
-      showDialog('Pogoda', e?.message ?? 'Nie udało się pobrać pogody.');
+      showDialog(t('stylist.noWeatherTitle'), e?.message ?? t('stylist.weatherError'));
     } finally {
       setLoadingWeather(false);
     }
@@ -65,12 +99,12 @@ export default function StylistScreen({ navigation }: any) {
     setLoadingWeather(true);
     try {
       const geo = await geocodeCity(city.trim());
-      if (!geo) throw new Error('Nie znaleziono takiego miasta.');
+      if (!geo) throw new Error(t('stylist.cityNotFound'));
       const w = await fetchCurrentWeather(geo.latitude, geo.longitude, `${geo.name}, ${geo.country}`);
       setWeather(w);
       setPrefs({ city: city.trim() });
     } catch (e: any) {
-      showDialog('Pogoda', e?.message ?? 'Nie udało się pobrać pogody.');
+      showDialog(t('stylist.noWeatherTitle'), e?.message ?? t('stylist.weatherError'));
     } finally {
       setLoadingWeather(false);
     }
@@ -81,18 +115,17 @@ export default function StylistScreen({ navigation }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const effectiveWeather = useManual
-    ? manualWeather(Number(manualTemp) || 15, manualRain)
-    : weather;
+  const effectiveWeather = useManual ? manualWeather(Number(manualTemp) || 15, manualRain) : weather;
 
   const generate = () => {
     // pusta szafa: nie ma z czego układać — pokaż sugestie zakupów (sekcja niżej)
     if (items.length === 0) {
+      pendingScroll.current = true;
       setSuggestions([]);
       return;
     }
     if (!effectiveWeather) {
-      showDialog('Pogoda', 'Najpierw pobierz pogodę albo ustaw ją ręcznie.');
+      showDialog(t('stylist.noWeatherTitle'), t('stylist.noWeatherMsg'));
       return;
     }
     const res = suggestOutfits(items, {
@@ -101,29 +134,31 @@ export default function StylistScreen({ navigation }: any) {
       bottomPreference: bottomPref,
       styles: styles_,
       weather: effectiveWeather,
+      lang,
     });
+    pendingScroll.current = true;
     setSuggestions(res);
   };
 
   // sugestie zakupów, gdy nie da się złożyć zestawu
-  const gaps = useMemo(() => analyzeGaps(items, stores), [items, stores]);
+  const gaps = useMemo(() => analyzeGaps(allItems, stores), [allItems, stores]);
 
   const saveSuggestion = (sug: OutfitSuggestion) => {
-    const label = OCCASIONS.find((o) => o.key === occasion)?.label ?? occasion;
+    const plLabel = OCCASIONS.find((o) => o.key === occasion)?.label ?? occasion;
     addOutfit({
-      name: `${label} · ${new Date().toLocaleDateString('pl-PL')}`,
+      name: `${occasionLabel(lang, occasion, plLabel)} · ${new Date().toLocaleDateString(lang === 'pl' ? 'pl-PL' : 'en-GB')}`,
       itemIds: sug.items.map((i) => i.id),
       occasion,
       favorite: false,
       source: 'stylista',
     });
-    showDialog('Zapisano', 'Kompozycja trafiła do zakładki Kompozycje.');
+    showDialog(t('stylist.saved'), t('stylist.savedMsg'));
   };
 
   return (
-    <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
+    <ScrollView ref={scrollRef} style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Card>
-        <Text style={s.cardTitle}>Pogoda</Text>
+        <Text style={s.cardTitle}>{t('stylist.weather')}</Text>
         {effectiveWeather ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
             <MaterialCommunityIcons
@@ -136,79 +171,86 @@ export default function StylistScreen({ navigation }: any) {
                 {effectiveWeather.tempC}°C · {effectiveWeather.description}
               </Text>
               <Text style={{ color: theme.colors.textMuted, fontSize: 13 }}>
-                odczuwalna {effectiveWeather.feelsLikeC}°C · opady {effectiveWeather.precipitationProb}%
-                {effectiveWeather.city ? ` · ${effectiveWeather.city}` : ''}
+                {t('stylist.feelsLike')} {effectiveWeather.feelsLikeC}°C · {t('stylist.precip')}{' '}
+                {effectiveWeather.precipitationProb}%{effectiveWeather.city ? ` · ${effectiveWeather.city}` : ''}
               </Text>
             </View>
           </View>
         ) : (
-          <Text style={{ color: theme.colors.textMuted, marginBottom: 8 }}>Pobierz pogodę, aby stylista dobrał ubrania do warunków.</Text>
+          <Text style={{ color: theme.colors.textMuted, marginBottom: 8 }}>{t('stylist.weatherHint')}</Text>
         )}
         {!useManual && (
           <>
             <View style={{ flexDirection: 'row', marginBottom: 8 }}>
               <TextInput
                 style={[s.input, { flex: 1, marginRight: 8 }]}
-                placeholder="Miasto, np. Kraków"
+                placeholder={t('stylist.cityPlaceholder')}
                 placeholderTextColor={theme.colors.textMuted}
                 value={city}
                 onChangeText={setCity}
               />
-              <PrimaryButton title="Sprawdź" onPress={loadWeatherByCity} />
+              <PrimaryButton title={t('stylist.check')} onPress={loadWeatherByCity} />
             </View>
-            <PrimaryButton title="Użyj mojej lokalizacji" icon="crosshairs-gps" variant="outline" onPress={loadWeatherByLocation} />
+            <PrimaryButton title={t('stylist.useLocation')} icon="crosshairs-gps" variant="outline" onPress={loadWeatherByLocation} />
           </>
         )}
         {loadingWeather && <ActivityIndicator style={{ marginTop: 8 }} color={theme.colors.primary} />}
         <View style={s.switchRow}>
-          <Text style={{ color: theme.colors.text }}>Ustaw pogodę ręcznie</Text>
+          <Text style={{ color: theme.colors.text }}>{t('stylist.manualWeather')}</Text>
           <Switch value={useManual} onValueChange={setUseManual} trackColor={{ true: theme.colors.primary }} />
         </View>
         {useManual && (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-            <TextInput
-              style={[s.input, { width: 80, marginRight: 8 }]}
-              keyboardType="numeric"
-              value={manualTemp}
-              onChangeText={setManualTemp}
-            />
+            <TextInput style={[s.input, { width: 80, marginRight: 8 }]} keyboardType="numeric" value={manualTemp} onChangeText={setManualTemp} />
             <Text style={{ color: theme.colors.text, marginRight: 16 }}>°C</Text>
-            <Text style={{ color: theme.colors.text, marginRight: 8 }}>Deszcz?</Text>
+            <Text style={{ color: theme.colors.text, marginRight: 8 }}>{t('stylist.rain')}</Text>
             <Switch value={manualRain} onValueChange={setManualRain} trackColor={{ true: theme.colors.primary }} />
           </View>
         )}
       </Card>
 
-      <Section title="Okazja">
+      <Section title={t('stylist.occasion')}>
         <ChipRow>
           {OCCASIONS.map((o) => (
-            <Chip key={o.key} label={o.label} icon={o.icon} selected={occasion === o.key} onPress={() => setOccasion(o.key)} />
+            <Chip
+              key={o.key}
+              label={occasionLabel(lang, o.key, o.label)}
+              icon={o.icon}
+              selected={occasion === o.key}
+              onPress={() => setOccasion(o.key)}
+            />
           ))}
         </ChipRow>
       </Section>
 
-      <Section title="Pora dnia">
+      <Section title={t('stylist.timeOfDay')}>
         <ChipRow>
-          {TIMES_OF_DAY.map((t) => (
-            <Chip key={t.key} label={t.label} icon={t.icon} selected={timeOfDay === t.key} onPress={() => setTimeOfDay(t.key)} />
+          {TIMES_OF_DAY.map((tm) => (
+            <Chip
+              key={tm.key}
+              label={timeLabel(lang, tm.key, tm.label)}
+              icon={tm.icon}
+              selected={timeOfDay === tm.key}
+              onPress={() => setTimeOfDay(tm.key)}
+            />
           ))}
         </ChipRow>
       </Section>
 
-      <Section title="Sukienka czy spodnie?">
+      <Section title={t('stylist.dressOrPants')}>
         <ChipRow>
           {(['dowolnie', 'sukienka', 'spodnie', 'spódnica'] as BottomPreference[]).map((b) => (
-            <Chip key={b} label={b} selected={bottomPref === b} onPress={() => setBottomPref(b)} />
+            <Chip key={b} label={bottomPrefLabel(lang, b)} selected={bottomPref === b} onPress={() => setBottomPref(b)} />
           ))}
         </ChipRow>
       </Section>
 
-      <Section title="Preferowany styl">
+      <Section title={t('stylist.preferredStyle')}>
         <ChipRow>
           {STYLES.map((st) => (
             <Chip
               key={st}
-              label={st}
+              label={styleLabel(lang, st)}
               selected={styles_.includes(st)}
               onPress={() => setStyles((prev) => (prev.includes(st) ? prev.filter((x) => x !== st) : [...prev, st]))}
             />
@@ -216,31 +258,29 @@ export default function StylistScreen({ navigation }: any) {
         </ChipRow>
       </Section>
 
-      <PrimaryButton title="Zaproponuj kompozycje" icon="auto-fix" onPress={generate} />
+      <PrimaryButton title={t('stylist.generate')} icon="auto-fix" onPress={generate} />
 
       {suggestions !== null && (
-        <View style={{ marginTop: 20 }}>
-          <Text style={s.resultsTitle}>Propozycje stylisty</Text>
+        <View style={{ marginTop: 20 }} onLayout={(e) => (resultsY.current = e.nativeEvent.layout.y)}>
+          <Text style={s.resultsTitle} accessibilityRole="header">
+            {t('stylist.results')}
+          </Text>
           {suggestions.length === 0 && (
             <Card>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
                 <MaterialCommunityIcons name="cart-heart" size={22} color={theme.colors.primary} style={{ marginRight: 8 }} />
-                <Text style={[s.cardTitle, { marginBottom: 0, flex: 1 }]}>Co warto dokupić</Text>
+                <Text style={[s.cardTitle, { marginBottom: 0, flex: 1 }]}>{t('stylist.buyTitle')}</Text>
               </View>
-              <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginBottom: 4 }}>
-                {items.length === 0
-                  ? 'Twoja szafa jest pusta — nie mam z czego ułożyć zestawu. Oto co warto skompletować na start:'
-                  : 'Nie udało się złożyć zestawu na tę okazję i pogodę. Dodaj więcej rzeczy lub poluzuj kryteria. Warto rozważyć:'}
+              <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginBottom: 8 }}>
+                {items.length === 0 ? t('stylist.buyEmptyWardrobe') : t('stylist.buyNoMatch')}
               </Text>
               {gaps.length > 0 ? (
                 <GapSuggestions gaps={gaps} limit={6} />
               ) : (
-                <Text style={{ color: theme.colors.accent, fontSize: 14, marginTop: 4 }}>
-                  Podstawy masz już skompletowane 👏 — spróbuj poluzować kryteria (styl, „sukienka/spodnie”) albo dodaj kilka rzeczy pasujących do tej okazji.
-                </Text>
+                <Text style={{ color: theme.colors.accent, fontSize: 14, marginTop: 4 }}>{t('stylist.buyAllGood')}</Text>
               )}
               <PrimaryButton
-                title="Dodaj rzecz do szafy"
+                title={t('stylist.addItem')}
                 icon="plus"
                 variant="outline"
                 onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
@@ -256,22 +296,28 @@ export default function StylistScreen({ navigation }: any) {
                     <Text style={s.propBadgeText}>{idx + 1}</Text>
                   </View>
                   <Text style={s.propTitle} accessibilityRole="header">
-                    Propozycja {idx + 1}
+                    {t('stylist.proposal')} {idx + 1}
                   </Text>
-                  <Text style={s.propCount}>{sug.items.length} części</Text>
+                  <Text style={s.propCount}>
+                    {sug.items.length} {t('stylist.parts')}
+                  </Text>
                 </View>
 
+                {/* części stylizacji z etykietą slotu (Góra / Dół / Buty...) */}
                 <View style={s.itemsGrid}>
                   {sug.items.map((item) => (
                     <TouchableOpacity
                       key={item.id}
-                      style={s.gridItem}
+                      style={s.itemTile}
                       onPress={() => navigation.navigate('Szafa', { screen: 'ItemDetail', params: { id: item.id } })}
                       accessibilityRole="imagebutton"
                       accessibilityLabel={item.name}
                     >
-                      <ItemThumb item={item} size={76} />
-                      <Text numberOfLines={2} style={s.gridItemLabel}>
+                      <View style={s.slotBadge}>
+                        <Text style={s.slotBadgeText}>{slotLabel(lang, slotOf(item.mainCategory, item.subcategory))}</Text>
+                      </View>
+                      <ItemThumb item={item} size={84} />
+                      <Text numberOfLines={2} style={s.itemTileLabel}>
                         {item.favorite ? '❤️ ' : ''}
                         {item.name}
                       </Text>
@@ -290,11 +336,11 @@ export default function StylistScreen({ navigation }: any) {
                 )}
                 {sug.missing.length > 0 && (
                   <Text style={s.missing}>
-                    Brakuje w szafie: {sug.missing.join(', ')} — sprawdź zakładkę Więcej → Czego brakuje.
+                    {t('stylist.missing')} {sug.missing.join(', ')} — {t('stylist.missingLink')}
                   </Text>
                 )}
                 <PrimaryButton
-                  title="Zapisz kompozycję"
+                  title={t('stylist.saveOutfit')}
                   icon="content-save-outline"
                   variant="outline"
                   onPress={() => saveSuggestion(sug)}
@@ -349,7 +395,7 @@ const makeStyles = (theme: Theme) =>
       marginBottom: theme.spacing.md,
       marginHorizontal: 6,
       flexGrow: 1,
-      flexBasis: 320,
+      flexBasis: 340,
     },
     propHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
     propBadge: {
@@ -365,6 +411,23 @@ const makeStyles = (theme: Theme) =>
     propTitle: { flex: 1, fontSize: 16, fontWeight: '700', color: theme.colors.text },
     propCount: { fontSize: 12, color: theme.colors.textMuted },
     itemsGrid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -5 },
-    gridItem: { width: 86, alignItems: 'center', marginHorizontal: 5, marginBottom: 10 },
-    gridItemLabel: { fontSize: 11, color: theme.colors.text, marginTop: 4, textAlign: 'center' },
+    itemTile: {
+      width: 104,
+      alignItems: 'center',
+      marginHorizontal: 5,
+      marginBottom: 10,
+      backgroundColor: theme.colors.cardAlt,
+      borderRadius: theme.radius.sm,
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+    },
+    slotBadge: {
+      backgroundColor: theme.colors.card,
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      marginBottom: 6,
+    },
+    slotBadgeText: { fontSize: 10, fontWeight: '700', color: theme.colors.textMuted, textTransform: 'uppercase' },
+    itemTileLabel: { fontSize: 11, color: theme.colors.text, marginTop: 4, textAlign: 'center' },
   });

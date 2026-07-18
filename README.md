@@ -15,7 +15,7 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - Wyszukiwarka i filtry
 
 ### ✨ Stylista
-- Propozycje kompletnych kompozycji (góra + dół lub sukienka, okrycie, buty, akcesoria)
+- Propozycje kompletnych stylizacji (góra + dół lub sukienka, okrycie, buty, akcesoria)
 - Kryteria: **okazja** (codzienne, praca, kino, park, rower, sport, randka, przyjęcie,
   wesele, pogrzeb, plaża), **pora dnia**, preferencja **sukienka / spodnie / spódnica**,
   **styl** (casual, elegancki, sportowy, boho…)
@@ -24,18 +24,18 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - Zna zasady: na pogrzeb tylko stonowane kolory, na wesele bez białej sukienki,
   w deszcz parasol i nieprzemakalne buty, na rower nic eleganckiego
 - Ocena harmonii kolorów i wzorów; wyjaśnia, dlaczego to proponuje
-- Każdą propozycję można **zapisać jako kompozycję**
+- Każdą propozycję można **zapisać jako stylizację**
 
-### 👗 Kompozycje
+### 👗 Stylizacje
 - Zapisuj propozycje stylisty i **twórz własne** z rzeczy w szafie
 - Dodawaj do ulubionych, notatki, przypisuj okazje
 
 ### 📅 Kalendarz stylizacji
-- Planuj kompozycje na konkretne dni — widok miesiąca z oznaczeniem zaplanowanych dat
+- Planuj stylizacje na konkretne dni — widok miesiąca z oznaczeniem zaplanowanych dat
 - Kilka planów na dzień, z opcjonalną porą dnia (rano / dzień / wieczór / noc)
 - Jeśli u Stylisty podasz miasto, przy każdym dniu (do 16 dni w przód) zobaczysz
   prognozę pogody — łatwiej ocenić, czy plan ma sens
-- Kompozycję można zaplanować też jednym dotknięciem z zakładki Kompozycje (ikona 📅)
+- Kompozycję można zaplanować też jednym dotknięciem z zakładki Stylizacje (ikona 📅)
 
 ### ✈️ Wyjazd
 - Podaj cel podróży (także za granicą) i liczbę dni — aplikacja pobierze tamtejszą
@@ -46,6 +46,17 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
   (Twoje ulubione sklepy lub popularne sieciówki)
 - Rejestr wydatków, budżet miesięczny z ostrzeżeniem o przekroczeniu, wartość szafy
 - Lista ulubionych sklepów
+
+### 🆕 Nowości
+- **Język**: polski i angielski (Więcej → Język / Language)
+- **Statusy ubrań**: archiwum / zwrócona / sprzedana / wyrzucona — takie rzeczy
+  nie biorą udziału w stylizacjach; filtr „Archiwum" w Szafie
+- **Katalogi**: własne grupy ubrań (np. „Do sprzedania") z filtrem w Szafie
+- **Budżet** jako osobna zakładka, wydatki z wyborem daty
+- **Analiza zdjęcia**: po dodaniu zdjęcia aplikacja rozpoznaje dominujące kolory
+  i podpowiada nazwę oraz opis rzeczy (np. „Czerwona sukienka")
+- **Zakupy**: sekcje „Co warto dokupić" i „Czego brakuje w szafie?" to kafelki
+  z ikoną części ubioru i linkami do sklepów
 
 ### 🌓 Wygląd
 - **Tryb ciemny**: Więcej → Wygląd (System / Jasny / Ciemny) — działa na
@@ -99,13 +110,13 @@ w localStorage tej przeglądarki (nie synchronizują się z telefonem).
 ```
 App.tsx                     – nawigacja (zakładki + stosy)
 src/
-  types.ts                  – model danych (rzecz, kompozycja, wydatek, pogoda…)
+  types.ts                  – model danych (rzecz, stylizacja, wydatek, pogoda…)
   data/constants.ts         – kategorie, kolory, style, okazje, formalność
   store/useAppStore.ts      – stan aplikacji (zustand + AsyncStorage)
   services/weather.ts       – pogoda i geokodowanie (Open-Meteo)
-  logic/stylist.ts          – silnik doboru kompozycji (punktacja, harmonia kolorów)
+  logic/stylist.ts          – silnik doboru stylizacji (punktacja, harmonia kolorów)
   logic/gaps.ts             – analiza braków w szafie
   logic/packing.ts          – lista pakowania na wyjazd
   components/ui.tsx         – wspólne komponenty UI
-  screens/                  – ekrany: Szafa, Stylista, Kompozycje, Kalendarz, Wyjazd, Więcej
+  screens/                  – ekrany: Szafa, Stylista, Stylizacje, Kalendarz, Wyjazd, Więcej
 ```

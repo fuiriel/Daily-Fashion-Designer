@@ -1,9 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../i18n';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
-import { formatDatePl, todayISO } from '../utils/date';
+import { formatDate, todayISO } from '../utils/date';
 import CalendarGrid from './CalendarGrid';
 import { PrimaryButton } from './ui';
 
@@ -22,11 +23,12 @@ export default function DatePickerField({
   label,
   value,
   onChange,
-  placeholder = 'Wybierz datę',
+  placeholder,
   maxISO,
   minISO,
 }: Props) {
   const { theme } = useTheme();
+  const { t, lang } = useI18n();
   const s = useThemedStyles(makeStyles);
   const [open, setOpen] = useState(false);
   const today = todayISO();
@@ -35,13 +37,13 @@ export default function DatePickerField({
   return (
     <View style={{ marginBottom: theme.spacing.md }}>
       <Text style={s.label}>{label}</Text>
-      <TouchableOpacity style={s.input} onPress={() => setOpen(true)}>
+      <TouchableOpacity style={s.input} onPress={() => setOpen(true)} accessibilityRole="button" accessibilityLabel={label}>
         <MaterialCommunityIcons name="calendar-month-outline" size={18} color={theme.colors.textMuted} />
         <Text style={[s.value, !value && { color: theme.colors.textMuted }]}>
-          {value ? formatDatePl(value) : placeholder}
+          {value ? formatDate(value, lang) : placeholder ?? t('common.pickDate')}
         </Text>
         {value ? (
-          <TouchableOpacity onPress={() => onChange('')} hitSlop={10}>
+          <TouchableOpacity onPress={() => onChange('')} hitSlop={10} accessibilityRole="button" accessibilityLabel={t('common.clear')}>
             <MaterialCommunityIcons name="close-circle" size={18} color={theme.colors.textMuted} />
           </TouchableOpacity>
         ) : null}
@@ -54,7 +56,7 @@ export default function DatePickerField({
               <Text style={[s.label, { flex: 1, fontSize: 15, fontWeight: '700', color: theme.colors.text }]}>
                 {label}
               </Text>
-              <TouchableOpacity onPress={() => setOpen(false)} hitSlop={10}>
+              <TouchableOpacity onPress={() => setOpen(false)} hitSlop={10} accessibilityRole="button">
                 <MaterialCommunityIcons name="close" size={22} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
@@ -68,10 +70,10 @@ export default function DatePickerField({
                 setOpen(false);
               }}
             />
-            <Text style={s.hint}>Nie można wybrać daty z przyszłości.</Text>
+            <Text style={s.hint}>{t('common.noFutureDates')}</Text>
             <View style={{ flexDirection: 'row', marginTop: 8 }}>
               <PrimaryButton
-                title="Dziś"
+                title={t('common.today')}
                 variant="outline"
                 onPress={() => {
                   onChange(today);
@@ -79,7 +81,15 @@ export default function DatePickerField({
                 }}
                 style={{ flex: 1, marginRight: 8 }}
               />
-              <PrimaryButton title="Wyczyść" variant="outline" onPress={() => { onChange(''); setOpen(false); }} style={{ flex: 1 }} />
+              <PrimaryButton
+                title={t('common.clear')}
+                variant="outline"
+                onPress={() => {
+                  onChange('');
+                  setOpen(false);
+                }}
+                style={{ flex: 1 }}
+              />
             </View>
           </TouchableOpacity>
         </TouchableOpacity>

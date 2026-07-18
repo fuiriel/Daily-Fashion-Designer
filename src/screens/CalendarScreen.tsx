@@ -1,28 +1,23 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  FlatList,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CalendarGrid from '../components/CalendarGrid';
-import { showDialog } from '../utils/dialog';
 import { Card, Chip, ChipRow, EmptyState, ItemThumb, PrimaryButton } from '../components/ui';
 import { TIMES_OF_DAY } from '../data/constants';
+import { useI18n } from '../i18n';
+import { timeLabel } from '../i18n/labels';
 import { DailyForecast, fetchDailyForecast, geocodeCity } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
+import { formatDate, todayISO as todayISOFn } from '../utils/date';
+import { showDialog } from '../utils/dialog';
 import { Outfit, TimeOfDay } from '../types';
-import { formatDatePl, todayISO as todayISOFn } from '../utils/date';
 
 export default function CalendarScreen({ navigation, route }: any) {
   const { theme } = useTheme();
+  const { t, lang } = useI18n();
   const s = useThemedStyles(makeStyles);
   const contentStyle = useContentStyle();
   const outfits = useAppStore((st) => st.outfits);
@@ -38,7 +33,7 @@ export default function CalendarScreen({ navigation, route }: any) {
   const [pickerTime, setPickerTime] = useState<TimeOfDay | undefined>();
   const [forecasts, setForecasts] = useState<Record<string, DailyForecast>>({});
 
-  // wejście z zakładki Kompozycje: „Zaplanuj tę kompozycję" — wybierz dzień i potwierdź
+  // wejście z zakładki Stylizacje: „Zaplanuj tę stylizację" — wybierz dzień i potwierdź
   const [pendingOutfitId, setPendingOutfitId] = useState<string | undefined>();
   const planOutfitId: string | undefined = route.params?.planOutfitId;
   useEffect(() => {
@@ -95,36 +90,32 @@ export default function CalendarScreen({ navigation, route }: any) {
 
   const openPicker = () => {
     if (outfits.length === 0) {
-      showDialog(
-        'Brak kompozycji',
-        'Najpierw zapisz kompozycję — poproś Stylistę o propozycję albo stwórz własną w zakładce Kompozycje.'
-      );
+      showDialog(t('calendar.noOutfitsTitle'), t('calendar.noOutfitsMsg'));
       return;
     }
     setPickerVisible(true);
   };
 
   const confirmRemove = (planId: string, outfitName: string) =>
-    showDialog('Usunąć z planu?', `„${outfitName}" zniknie z tego dnia.`, [
-      { text: 'Anuluj', style: 'cancel' },
-      { text: 'Usuń', style: 'destructive', onPress: () => removePlan(planId) },
+    showDialog(t('calendar.removeTitle'), t('calendar.removeMsg', { name: outfitName }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => removePlan(planId) },
     ]);
 
-  const selectedLabel = formatDatePl(selectedDate);
-
+  const selectedLabel = formatDate(selectedDate, lang);
   const pendingOutfit = pendingOutfitId ? outfitById(pendingOutfitId) : undefined;
 
   return (
     <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       {pendingOutfit && (
         <Card style={{ borderColor: theme.colors.primary }}>
-          <Text style={s.planName}>Planowanie: {pendingOutfit.name}</Text>
-          <Text style={[s.forecastHint, { marginTop: 2 }]}>
-            Wybierz dzień w kalendarzu i potwierdź poniżej.
+          <Text style={s.planName}>
+            {t('calendar.planning')} {pendingOutfit.name}
           </Text>
+          <Text style={[s.forecastHint, { marginTop: 2 }]}>{t('calendar.planningHint')}</Text>
           <View style={{ flexDirection: 'row' }}>
             <PrimaryButton
-              title={`Zaplanuj na ${selectedLabel}`}
+              title={t('calendar.planOn', { date: selectedLabel })}
               icon="check"
               onPress={() => {
                 addPlan({ date: selectedDate, outfitId: pendingOutfit.id });
@@ -132,17 +123,12 @@ export default function CalendarScreen({ navigation, route }: any) {
               }}
               style={{ flex: 1, marginRight: 8 }}
             />
-            <PrimaryButton title="Anuluj" variant="outline" onPress={() => setPendingOutfitId(undefined)} />
+            <PrimaryButton title={t('common.cancel')} variant="outline" onPress={() => setPendingOutfitId(undefined)} />
           </View>
         </Card>
       )}
       <Card>
-        <CalendarGrid
-          selectedISO={selectedDate}
-          onSelect={setSelectedDate}
-          todayISO={todayISO}
-          markedDates={markedDates}
-        />
+        <CalendarGrid selectedISO={selectedDate} onSelect={setSelectedDate} todayISO={todayISO} markedDates={markedDates} />
       </Card>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
@@ -162,33 +148,31 @@ export default function CalendarScreen({ navigation, route }: any) {
       </View>
       {prefs.city && dayForecast && (
         <Text style={s.forecastHint}>
-          Prognoza dla: {prefs.city} · {dayForecast.description}
-          {dayForecast.precipitationProb >= 40 ? ` · opady ${dayForecast.precipitationProb}%` : ''}
+          {t('calendar.forecastFor')} {prefs.city} · {dayForecast.description}
+          {dayForecast.precipitationProb >= 40 ? ` · ${t('stylist.precip')} ${dayForecast.precipitationProb}%` : ''}
         </Text>
       )}
 
-      {dayPlans.length === 0 && (
-        <EmptyState icon="calendar-blank-outline" text="Nic nie zaplanowano na ten dzień. Dodaj kompozycję poniżej." />
-      )}
+      {dayPlans.length === 0 && <EmptyState icon="calendar-blank-outline" text={t('calendar.nothingPlanned')} />}
       {dayPlans.map((plan) => {
         const outfit = outfitById(plan.outfitId);
         if (!outfit) return null;
         const outfitItems = outfit.itemIds
           .map((id) => items.find((i) => i.id === id))
           .filter((x): x is NonNullable<typeof x> => !!x);
-        const timeLabel = TIMES_OF_DAY.find((t) => t.key === plan.timeOfDay)?.label;
+        const timePl = TIMES_OF_DAY.find((tm) => tm.key === plan.timeOfDay)?.label;
         return (
           <Card key={plan.id}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <View style={{ flex: 1 }}>
                 <Text style={s.planName}>{outfit.name}</Text>
                 <Text style={s.planSub}>
-                  {timeLabel ? `${timeLabel} · ` : ''}
-                  {outfit.occasion ?? 'bez okazji'}
+                  {plan.timeOfDay && timePl ? `${timeLabel(lang, plan.timeOfDay, timePl)} · ` : ''}
+                  {outfit.occasion ?? t('calendar.noOccasion')}
                   {outfit.favorite ? ' · ❤️' : ''}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => confirmRemove(plan.id, outfit.name)} hitSlop={10}>
+              <TouchableOpacity onPress={() => confirmRemove(plan.id, outfit.name)} hitSlop={10} accessibilityRole="button">
                 <MaterialCommunityIcons name="trash-can-outline" size={22} color={theme.colors.textMuted} />
               </TouchableOpacity>
             </View>
@@ -210,26 +194,28 @@ export default function CalendarScreen({ navigation, route }: any) {
         );
       })}
 
-      <PrimaryButton title="Zaplanuj kompozycję na ten dzień" icon="calendar-plus" onPress={openPicker} />
+      <PrimaryButton title={t('calendar.planBtn')} icon="calendar-plus" onPress={openPicker} />
 
       <Modal visible={pickerVisible} animationType="slide" transparent onRequestClose={() => setPickerVisible(false)}>
         <View style={s.modalBackdrop}>
           <View style={s.modalSheet}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-              <Text style={[s.dayTitle, { flex: 1 }]}>Wybierz kompozycję · {selectedLabel}</Text>
-              <TouchableOpacity onPress={() => setPickerVisible(false)} hitSlop={10}>
+              <Text style={[s.dayTitle, { flex: 1 }]}>
+                {t('calendar.pickOutfit')} · {selectedLabel}
+              </Text>
+              <TouchableOpacity onPress={() => setPickerVisible(false)} hitSlop={10} accessibilityRole="button">
                 <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
-            <Text style={s.forecastHint}>Pora dnia (opcjonalnie):</Text>
+            <Text style={s.forecastHint}>{t('calendar.timeOpt')}</Text>
             <ChipRow>
-              {TIMES_OF_DAY.map((t) => (
+              {TIMES_OF_DAY.map((tm) => (
                 <Chip
-                  key={t.key}
-                  label={t.label}
-                  icon={t.icon}
-                  selected={pickerTime === t.key}
-                  onPress={() => setPickerTime(pickerTime === t.key ? undefined : t.key)}
+                  key={tm.key}
+                  label={timeLabel(lang, tm.key, tm.label)}
+                  icon={tm.icon}
+                  selected={pickerTime === tm.key}
+                  onPress={() => setPickerTime(pickerTime === tm.key ? undefined : tm.key)}
                 />
               ))}
             </ChipRow>
@@ -250,7 +236,7 @@ export default function CalendarScreen({ navigation, route }: any) {
                         {outfit.name}
                       </Text>
                       <Text style={s.planSub}>
-                        {outfit.source === 'stylista' ? 'od stylisty' : 'własna'}
+                        {outfit.source === 'stylista' ? t('outfits.fromStylist') : t('outfits.own')}
                         {outfit.occasion ? ` · ${outfit.occasion}` : ''}
                       </Text>
                     </View>
@@ -274,37 +260,37 @@ export default function CalendarScreen({ navigation, route }: any) {
 
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  dayTitle: { fontSize: 16, fontWeight: '700', color: theme.colors.text },
-  forecastBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.chipBg,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginLeft: 10,
-  },
-  forecastText: { marginLeft: 4, color: theme.colors.text, fontSize: 13, fontWeight: '600' },
-  forecastHint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 8 },
-  planName: { fontSize: 15, fontWeight: '600', color: theme.colors.text },
-  planSub: { fontSize: 12, color: theme.colors.textMuted },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalSheet: {
-    backgroundColor: theme.colors.background,
-    borderTopLeftRadius: theme.radius.lg,
-    borderTopRightRadius: theme.radius.lg,
-    padding: 16,
-    maxHeight: '75%',
-  },
-  pickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 12,
-    marginBottom: 8,
-  },
-});
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    dayTitle: { fontSize: 16, fontWeight: '700', color: theme.colors.text },
+    forecastBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.chipBg,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      marginLeft: 10,
+    },
+    forecastText: { marginLeft: 4, color: theme.colors.text, fontSize: 13, fontWeight: '600' },
+    forecastHint: { color: theme.colors.textMuted, fontSize: 12, marginBottom: 8 },
+    planName: { fontSize: 15, fontWeight: '600', color: theme.colors.text },
+    planSub: { fontSize: 12, color: theme.colors.textMuted },
+    modalBackdrop: { flex: 1, backgroundColor: theme.colors.overlay, justifyContent: 'flex-end' },
+    modalSheet: {
+      backgroundColor: theme.colors.background,
+      borderTopLeftRadius: theme.radius.lg,
+      borderTopRightRadius: theme.radius.lg,
+      padding: 16,
+      maxHeight: '75%',
+    },
+    pickerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 12,
+      marginBottom: 8,
+    },
+  });

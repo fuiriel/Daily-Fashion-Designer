@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Expense, Outfit, PlannedOutfit, StorePref, UserPrefs, WardrobeItem } from '../types';
+import { Catalog, Expense, Language, Outfit, PlannedOutfit, StorePref, UserPrefs, WardrobeItem } from '../types';
 
 export function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -14,13 +14,21 @@ interface AppState {
   expenses: Expense[];
   stores: StorePref[];
   plans: PlannedOutfit[];
+  catalogs: Catalog[];
   prefs: UserPrefs;
   onboardingDone: boolean;
   themeMode: 'system' | 'light' | 'dark';
+  language: Language;
 
   completeOnboarding: () => void;
   resetOnboarding: () => void;
   setThemeMode: (mode: 'system' | 'light' | 'dark') => void;
+  setLanguage: (lang: Language) => void;
+
+  setItemStatus: (id: string, status: WardrobeItem['status']) => void;
+  addCatalog: (name: string) => Catalog;
+  removeCatalog: (id: string) => void;
+  toggleItemCatalog: (itemId: string, catalogId: string) => void;
 
   addItem: (item: Omit<WardrobeItem, 'id' | 'createdAt'>) => WardrobeItem;
   updateItem: (id: string, patch: Partial<WardrobeItem>) => void;
@@ -54,13 +62,46 @@ export const useAppStore = create<AppState>()(
       expenses: [],
       stores: [],
       plans: [],
+      catalogs: [],
       prefs: { favoriteStyles: [] },
       onboardingDone: false,
       themeMode: 'system',
+      language: 'pl',
 
       completeOnboarding: () => set({ onboardingDone: true }),
       resetOnboarding: () => set({ onboardingDone: false }),
       setThemeMode: (mode) => set({ themeMode: mode }),
+      setLanguage: (lang) => set({ language: lang }),
+
+      setItemStatus: (id, status) =>
+        set((s) => ({ items: s.items.map((i) => (i.id === id ? { ...i, status } : i)) })),
+      addCatalog: (name) => {
+        const catalog: Catalog = { id: uid(), name };
+        set((s) => ({ catalogs: [...s.catalogs, catalog] }));
+        return catalog;
+      },
+      removeCatalog: (id) =>
+        set((s) => ({
+          catalogs: s.catalogs.filter((c) => c.id !== id),
+          items: s.items.map((i) =>
+            i.catalogIds?.includes(id)
+              ? { ...i, catalogIds: i.catalogIds.filter((x) => x !== id) }
+              : i
+          ),
+        })),
+      toggleItemCatalog: (itemId, catalogId) =>
+        set((s) => ({
+          items: s.items.map((i) => {
+            if (i.id !== itemId) return i;
+            const list = i.catalogIds ?? [];
+            return {
+              ...i,
+              catalogIds: list.includes(catalogId)
+                ? list.filter((x) => x !== catalogId)
+                : [...list, catalogId],
+            };
+          }),
+        })),
 
       addItem: (data) => {
         const item: WardrobeItem = { ...data, id: uid(), createdAt: new Date().toISOString() };

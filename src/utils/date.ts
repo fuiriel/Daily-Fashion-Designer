@@ -1,8 +1,5 @@
-export const WEEKDAYS = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
-export const MONTHS = [
-  'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
-  'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień',
-];
+import { MONTHS_BY_LANG } from '../i18n/labels';
+import { Language } from '../types';
 
 export function toISO(d: Date): string {
   const m = `${d.getMonth() + 1}`.padStart(2, '0');
@@ -26,9 +23,10 @@ export function monthGrid(year: number, month: number): (Date | null)[] {
   return cells;
 }
 
-// „17 lipiec 2026" z ISO yyyy-mm-dd
-export function formatDatePl(iso: string): string {
+// „17 lipiec 2026" / "17 July 2026" z ISO yyyy-mm-dd
+export function formatDate(iso: string, lang: Language): string {
   const d = new Date(`${iso}T12:00:00`);
   if (isNaN(d.getTime())) return iso;
-  return `${d.getDate()} ${MONTHS[d.getMonth()].toLowerCase()} ${d.getFullYear()}`;
+  const month = MONTHS_BY_LANG[lang][d.getMonth()];
+  return `${d.getDate()} ${lang === 'pl' ? month.toLowerCase() : month} ${d.getFullYear()}`;
 }

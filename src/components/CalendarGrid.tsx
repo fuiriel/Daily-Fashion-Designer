@@ -1,9 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../i18n';
+import { MONTHS_BY_LANG, WEEKDAYS_BY_LANG } from '../i18n/labels';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
-import { MONTHS, monthGrid, toISO, WEEKDAYS } from '../utils/date';
+import { monthGrid, toISO } from '../utils/date';
 
 interface Props {
   selectedISO: string;
@@ -24,6 +26,7 @@ export default function CalendarGrid({
   markedDates,
 }: Props) {
   const { theme } = useTheme();
+  const { lang } = useI18n();
   const s = useThemedStyles(makeStyles);
   const initial = selectedISO ? new Date(`${selectedISO}T12:00:00`) : new Date();
   const [cursor, setCursor] = useState({ year: initial.getFullYear(), month: initial.getMonth() });
@@ -37,18 +40,18 @@ export default function CalendarGrid({
   return (
     <View>
       <View style={s.monthHeader}>
-        <TouchableOpacity onPress={() => changeMonth(-1)} hitSlop={10}>
+        <TouchableOpacity onPress={() => changeMonth(-1)} hitSlop={10} accessibilityRole="button">
           <MaterialCommunityIcons name="chevron-left" size={28} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={s.monthTitle}>
-          {MONTHS[cursor.month]} {cursor.year}
+          {MONTHS_BY_LANG[lang][cursor.month]} {cursor.year}
         </Text>
-        <TouchableOpacity onPress={() => changeMonth(1)} hitSlop={10}>
+        <TouchableOpacity onPress={() => changeMonth(1)} hitSlop={10} accessibilityRole="button">
           <MaterialCommunityIcons name="chevron-right" size={28} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
       <View style={s.weekRow}>
-        {WEEKDAYS.map((w) => (
+        {WEEKDAYS_BY_LANG[lang].map((w) => (
           <Text key={w} style={s.weekday}>
             {w}
           </Text>
@@ -73,12 +76,17 @@ export default function CalendarGrid({
                 style={[
                   s.dayNumber,
                   disabled && s.dayDisabled,
-                  isSelected && { color: '#fff', fontWeight: '700' },
+                  isSelected && { color: theme.colors.onPrimary, fontWeight: '700' },
                 ]}
               >
                 {date.getDate()}
               </Text>
-              <View style={[s.dot, marked && { backgroundColor: isSelected ? '#fff' : theme.colors.primary }]} />
+              <View
+                style={[
+                  s.dot,
+                  marked && { backgroundColor: isSelected ? theme.colors.onPrimary : theme.colors.primary },
+                ]}
+              />
             </TouchableOpacity>
           );
         })}
@@ -89,26 +97,26 @@ export default function CalendarGrid({
 
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
-  monthHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  monthTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text },
-  weekRow: { flexDirection: 'row', marginBottom: 4 },
-  weekday: { flex: 1, textAlign: 'center', color: theme.colors.textMuted, fontSize: 12, fontWeight: '600' },
-  daysGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  dayCell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radius.sm,
-  },
-  daySelected: { backgroundColor: theme.colors.primary },
-  dayToday: { borderWidth: 1.5, borderColor: theme.colors.primary },
-  dayNumber: { fontSize: 14, color: theme.colors.text },
-  dayDisabled: { color: theme.colors.border },
-  dot: { width: 5, height: 5, borderRadius: 3, marginTop: 2, backgroundColor: 'transparent' },
-});
+    monthHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+    monthTitle: { fontSize: 17, fontWeight: '700', color: theme.colors.text },
+    weekRow: { flexDirection: 'row', marginBottom: 4 },
+    weekday: { flex: 1, textAlign: 'center', color: theme.colors.textMuted, fontSize: 12, fontWeight: '600' },
+    daysGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+    dayCell: {
+      width: `${100 / 7}%`,
+      aspectRatio: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: theme.radius.sm,
+    },
+    daySelected: { backgroundColor: theme.colors.primary },
+    dayToday: { borderWidth: 1.5, borderColor: theme.colors.primary },
+    dayNumber: { fontSize: 14, color: theme.colors.text },
+    dayDisabled: { color: theme.colors.border },
+    dot: { width: 5, height: 5, borderRadius: 3, marginTop: 2, backgroundColor: 'transparent' },
+  });

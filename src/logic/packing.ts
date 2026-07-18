@@ -1,6 +1,6 @@
 import { slotOf } from '../data/constants';
 import { DailyForecast } from '../services/weather';
-import { Slot, WardrobeItem } from '../types';
+import { Language, Slot, WardrobeItem } from '../types';
 import { scoreItem, warmthNeed } from './stylist';
 import { StylistRequest, WeatherInfo } from '../types';
 
@@ -10,13 +10,40 @@ export interface PackingList {
   missing: string[];
 }
 
-const SLOT_LABELS: Record<Slot, string> = {
-  top: 'Góry',
-  bottom: 'Doły',
-  dress: 'Sukienki / kombinezony',
-  outerwear: 'Okrycia wierzchnie',
-  shoes: 'Buty',
-  accessory: 'Akcesoria',
+const SLOT_LABELS: Record<Language, Record<Slot, string>> = {
+  pl: {
+    top: 'Góry',
+    bottom: 'Doły',
+    dress: 'Sukienki / kombinezony',
+    outerwear: 'Okrycia wierzchnie',
+    shoes: 'Buty',
+    accessory: 'Akcesoria',
+  },
+  en: {
+    top: 'Tops',
+    bottom: 'Bottoms',
+    dress: 'Dresses / jumpsuits',
+    outerwear: 'Outerwear',
+    shoes: 'Shoes',
+    accessory: 'Accessories',
+  },
+};
+
+const MISSING_TEXTS: Record<Language, Record<string, string>> = {
+  pl: {
+    tops: 'za mało gór na tę pogodę',
+    bottoms: 'brak dołów lub sukienek na tę pogodę',
+    shoes: 'brak butów na ten klimat',
+    outer: 'brak okrycia wierzchniego na chłodniejsze dni',
+    rain: 'coś na deszcz (parasol / kurtka przeciwdeszczowa)',
+  },
+  en: {
+    tops: 'not enough tops for this weather',
+    bottoms: 'no bottoms or dresses for this weather',
+    shoes: 'no shoes for this climate',
+    outer: 'no outerwear for colder days',
+    rain: 'something for rain (umbrella / rain jacket)',
+  },
 };
 
 // Ile sztuk z danego slotu zabrać na X dni
@@ -41,7 +68,8 @@ export function buildPackingList(
   items: WardrobeItem[],
   forecast: DailyForecast[],
   days: number,
-  destination: string
+  destination: string,
+  lang: Language = 'pl'
 ): PackingList {
   const minTemp = Math.min(...forecast.map((f) => f.tempMin));
   const maxTemp = Math.max(...forecast.map((f) => f.tempMax));
@@ -86,23 +114,28 @@ export function buildPackingList(
     );
     const wanted = countFor(slot, days);
     const chosen = pool.slice(0, wanted);
-    if (chosen.length) toPack.push({ slot, label: SLOT_LABELS[slot], items: chosen });
-    if (slot === 'top' && chosen.length < Math.min(wanted, 2)) missing.push('za mało gór na tę pogodę');
+    if (chosen.length) toPack.push({ slot, label: SLOT_LABELS[lang][slot], items: chosen });
+    if (slot === 'top' && chosen.length < Math.min(wanted, 2)) missing.push(MISSING_TEXTS[lang].tops);
     if (slot === 'bottom' && chosen.length === 0 && (bySlot.get('dress') ?? []).length === 0)
-      missing.push('brak dołów lub sukienek na tę pogodę');
-    if (slot === 'shoes' && chosen.length === 0) missing.push('brak butów na ten klimat');
+      missing.push(MISSING_TEXTS[lang].bottoms);
+    if (slot === 'shoes' && chosen.length === 0) missing.push(MISSING_TEXTS[lang].shoes);
     if (slot === 'outerwear' && needCold >= 3 && chosen.length === 0)
-      missing.push('brak okrycia wierzchniego na chłodniejsze dni');
+      missing.push(MISSING_TEXTS[lang].outer);
   }
   if (rainyDays > 0 && !items.some((i) => i.subcategory === 'parasol' || i.waterproof)) {
-    missing.push('coś na deszcz (parasol / kurtka przeciwdeszczowa)');
+    missing.push(MISSING_TEXTS[lang].rain);
   }
 
   const summary =
-    `${destination}: ${minTemp}°C do ${maxTemp}°C, ` +
-    (rainyDays > 0 ? `deszcz przez ok. ${rainyDays} dni. ` : 'raczej bez opadów. ') +
-    (snowy ? 'Możliwy śnieg. ' : '') +
-    `Plan na ${days} dni.`;
+    lang === 'en'
+      ? `${destination}: ${minTemp}°C to ${maxTemp}°C, ` +
+        (rainyDays > 0 ? `rain for about ${rainyDays} day(s). ` : 'mostly dry. ') +
+        (snowy ? 'Snow possible. ' : '') +
+        `Plan for ${days} days.`
+      : `${destination}: ${minTemp}°C do ${maxTemp}°C, ` +
+        (rainyDays > 0 ? `deszcz przez ok. ${rainyDays} dni. ` : 'raczej bez opadów. ') +
+        (snowy ? 'Możliwy śnieg. ' : '') +
+        `Plan na ${days} dni.`;
 
   return { summary, toPack, missing };
 }

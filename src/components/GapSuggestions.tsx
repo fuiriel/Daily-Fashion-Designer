@@ -1,47 +1,96 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../i18n';
+import { GAP_TEXTS } from '../i18n/labels';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
-import { GapSuggestion } from '../types';
+import { GapStoreLink, GapSuggestion } from '../types';
 
-// Lista sugestii zakupów (co warto dokupić i gdzie). Wspólna dla zakładki
-// Więcej (analiza braków) i Stylisty (gdy nie da się złożyć zestawu).
+function storeUrl(store: GapStoreLink, query: string): string {
+  if (store.url) return store.url;
+  return `https://www.google.com/search?q=${encodeURIComponent(`${store.name} ${query}`)}`;
+}
+
+// Kafelki sugestii zakupów: wizualizacja części ubioru (ikona), tytuł, powód
+// i klikalne sklepy otwierające ich strony internetowe.
 export default function GapSuggestions({ gaps, limit }: { gaps: GapSuggestion[]; limit?: number }) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
+  const { t, lang } = useI18n();
   const list = typeof limit === 'number' ? gaps.slice(0, limit) : gaps;
+
   return (
-    <View>
-      {list.map((g, i) => (
-        <View key={i} style={[s.row, i === 0 && { marginTop: 0, paddingTop: 0, borderTopWidth: 0 }]}>
-          <MaterialCommunityIcons
-            name="cart-plus"
-            size={20}
-            color={theme.colors.primary}
-            style={{ marginRight: 8, marginTop: 2 }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={s.what}>{g.what}</Text>
-            <Text style={s.why}>{g.why}</Text>
-            <Text style={s.where}>Gdzie kupić: {g.whereToBuy.join(', ')}</Text>
+    <View style={s.wrap}>
+      {list.map((g) => {
+        const texts = GAP_TEXTS[lang][g.id] ?? GAP_TEXTS.pl[g.id] ?? { what: g.id, why: '' };
+        return (
+          <View key={g.id} style={s.tile}>
+            <View style={s.iconCircle}>
+              <MaterialCommunityIcons name={g.icon as any} size={30} color={theme.colors.primary} />
+            </View>
+            <Text style={s.what}>{texts.what}</Text>
+            <Text style={s.why}>{texts.why}</Text>
+            <Text style={s.whereLabel}>{t('common.whereToBuy')}</Text>
+            <View style={s.storeRow}>
+              {g.whereToBuy.map((store) => (
+                <TouchableOpacity
+                  key={store.name}
+                  style={s.storeChip}
+                  accessibilityRole="link"
+                  accessibilityLabel={store.name}
+                  onPress={() => Linking.openURL(storeUrl(store, texts.what))}
+                >
+                  <MaterialCommunityIcons name="open-in-new" size={12} color={theme.colors.accent} />
+                  <Text style={s.storeText}>{store.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }
 
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
-    row: {
-      flexDirection: 'row',
-      marginTop: 12,
-      paddingTop: 12,
-      borderTopWidth: 1,
-      borderTopColor: theme.colors.border,
+    wrap: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -5 },
+    tile: {
+      flexGrow: 1,
+      flexBasis: 220,
+      maxWidth: 340,
+      backgroundColor: theme.colors.cardAlt,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 14,
+      margin: 5,
     },
-    what: { fontWeight: '600', color: theme.colors.text },
-    why: { color: theme.colors.textMuted, fontSize: 13 },
-    where: { color: theme.colors.accent, fontSize: 13 },
+    iconCircle: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: theme.colors.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 10,
+    },
+    what: { fontWeight: '700', color: theme.colors.text, fontSize: 14, marginBottom: 2 },
+    why: { color: theme.colors.textMuted, fontSize: 12, lineHeight: 17, marginBottom: 8 },
+    whereLabel: { color: theme.colors.textMuted, fontSize: 11, marginBottom: 4 },
+    storeRow: { flexDirection: 'row', flexWrap: 'wrap' },
+    storeChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      marginRight: 6,
+      marginBottom: 6,
+    },
+    storeText: { color: theme.colors.accent, fontSize: 12, fontWeight: '600', marginLeft: 4 },
   });

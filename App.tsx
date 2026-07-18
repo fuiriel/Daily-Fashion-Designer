@@ -8,7 +8,9 @@ import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import DialogHost from './src/components/DialogHost';
 import Onboarding from './src/components/Onboarding';
+import { useI18n } from './src/i18n';
 import { useAppStore, useHydrated } from './src/store/useAppStore';
+import BudgetScreen from './src/screens/BudgetScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
 import ItemFormScreen from './src/screens/ItemFormScreen';
@@ -37,21 +39,23 @@ function stackScreenOptions(theme: Theme) {
 
 function WardrobeStackScreen() {
   const { theme } = useTheme();
+  const { t } = useI18n();
   return (
     <WardrobeStack.Navigator screenOptions={stackScreenOptions(theme)}>
-      <WardrobeStack.Screen name="WardrobeList" component={WardrobeScreen} options={{ title: 'Moja szafa' }} />
-      <WardrobeStack.Screen name="ItemForm" component={ItemFormScreen} options={{ title: 'Rzecz' }} />
-      <WardrobeStack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: 'Szczegóły' }} />
+      <WardrobeStack.Screen name="WardrobeList" component={WardrobeScreen} options={{ title: t('title.wardrobe') }} />
+      <WardrobeStack.Screen name="ItemForm" component={ItemFormScreen} options={{ title: t('title.item') }} />
+      <WardrobeStack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: t('title.itemDetails') }} />
     </WardrobeStack.Navigator>
   );
 }
 
 function OutfitsStackScreen() {
   const { theme } = useTheme();
+  const { t } = useI18n();
   return (
     <OutfitsStack.Navigator screenOptions={stackScreenOptions(theme)}>
-      <OutfitsStack.Screen name="OutfitsList" component={OutfitsScreen} options={{ title: 'Kompozycje' }} />
-      <OutfitsStack.Screen name="OutfitBuilder" component={OutfitBuilderScreen} options={{ title: 'Nowa kompozycja' }} />
+      <OutfitsStack.Screen name="OutfitsList" component={OutfitsScreen} options={{ title: t('title.outfits') }} />
+      <OutfitsStack.Screen name="OutfitBuilder" component={OutfitBuilderScreen} options={{ title: t('title.newOutfit') }} />
     </OutfitsStack.Navigator>
   );
 }
@@ -61,6 +65,7 @@ const TAB_ICONS: Record<string, string> = {
   Szafa: 'wardrobe-outline',
   Kompozycje: 'hanger',
   Kalendarz: 'calendar-heart',
+  Budżet: 'wallet-outline',
   Wyjazd: 'bag-suitcase',
   Więcej: 'dots-horizontal-circle-outline',
 };
@@ -91,7 +96,6 @@ function useWebFocusStyles(focusColor: string) {
       html { scroll-behavior: smooth; }
     `;
     document.head.appendChild(style);
-    document.documentElement.lang = 'pl';
     return () => {
       document.head.removeChild(style);
     };
@@ -100,6 +104,7 @@ function useWebFocusStyles(focusColor: string) {
 
 function AppInner() {
   const { theme, isDark } = useTheme();
+  const { t, lang } = useI18n();
   const isWide = useIsWide();
   useWebFocusStyles(theme.colors.focus);
   const hydrated = useHydrated();
@@ -107,8 +112,20 @@ function AppInner() {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const showOnboarding = hydrated && !onboardingDone;
 
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
   return (
-    <NavigationContainer theme={navigationTheme(theme)}>
+    <NavigationContainer
+      theme={navigationTheme(theme)}
+      documentTitle={{
+        // tytuł karty przeglądarki: „[nazwa widoku] - [nazwa aplikacji]"
+        formatter: (options, route) => `${options?.title ?? route?.name ?? ''} - ${t('app.name')}`,
+      }}
+    >
       <StatusBar style={isDark ? 'light' : 'dark'} />
       {showOnboarding && <Onboarding onDone={completeOnboarding} />}
       <Tab.Navigator
@@ -137,12 +154,13 @@ function AppInner() {
           ),
         })}
       >
-        <Tab.Screen name="Stylista" component={StylistScreen} options={{ title: 'Stylista' }} />
-        <Tab.Screen name="Szafa" component={WardrobeStackScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="Kompozycje" component={OutfitsStackScreen} options={{ headerShown: false }} />
-        <Tab.Screen name="Kalendarz" component={CalendarScreen} options={{ title: 'Kalendarz stylizacji' }} />
-        <Tab.Screen name="Wyjazd" component={TripScreen} />
-        <Tab.Screen name="Więcej" component={MoreScreen} />
+        <Tab.Screen name="Stylista" component={StylistScreen} options={{ title: t('tab.stylist') }} />
+        <Tab.Screen name="Szafa" component={WardrobeStackScreen} options={{ headerShown: false, title: t('tab.wardrobe') }} />
+        <Tab.Screen name="Kompozycje" component={OutfitsStackScreen} options={{ headerShown: false, title: t('tab.outfits') }} />
+        <Tab.Screen name="Kalendarz" component={CalendarScreen} options={{ title: t('title.calendar'), tabBarLabel: t('tab.calendar') }} />
+        <Tab.Screen name="Budżet" component={BudgetScreen} options={{ title: t('title.budget'), tabBarLabel: t('tab.budget') }} />
+        <Tab.Screen name="Wyjazd" component={TripScreen} options={{ title: t('tab.trip') }} />
+        <Tab.Screen name="Więcej" component={MoreScreen} options={{ title: t('tab.more') }} />
       </Tab.Navigator>
     </NavigationContainer>
   );
