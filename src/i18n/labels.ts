@@ -228,6 +228,9 @@ export const GAP_TEXTS: Record<Language, Record<string, { what: string; why: str
     umbrella: { what: 'Parasol', why: 'Ratuje każdą stylizację w deszczowy dzień.' },
     winterAcc: { what: 'Szalik, czapka i rękawiczki', why: 'Zimowe akcesoria — brakuje przynajmniej jednego z nich.' },
     bag: { what: 'Torebka lub plecak', why: 'Praktyczne dopełnienie każdego wyjścia.' },
+    ctxTop: { what: 'Góra na tę okazję', why: 'W szafie nie ma góry pasującej do wybranej okazji i pogody.' },
+    ctxBottom: { what: 'Dół na tę okazję', why: 'Brak spodni lub spódnicy pasujących do wybranych kryteriów.' },
+    ctxDress: { what: 'Sukienka na tę okazję', why: 'Brak sukienki pasującej do wybranych kryteriów.' },
   },
   en: {
     warmOuter: { what: 'Warm jacket or coat (winter)', why: 'No outerwear for temperatures below 5°C.' },
@@ -246,5 +249,8 @@ export const GAP_TEXTS: Record<Language, Record<string, { what: string; why: str
     umbrella: { what: 'Umbrella', why: 'Saves any outfit on a rainy day.' },
     winterAcc: { what: 'Scarf, beanie and gloves', why: 'Winter accessories — at least one is missing.' },
     bag: { what: 'Handbag or backpack', why: 'A practical finish to every outing.' },
+    ctxTop: { what: 'A top for this occasion', why: 'No top in the wardrobe matches the selected occasion and weather.' },
+    ctxBottom: { what: 'A bottom for this occasion', why: 'No trousers or skirt match the selected criteria.' },
+    ctxDress: { what: 'A dress for this occasion', why: 'No dress matches the selected criteria.' },
   },
 };

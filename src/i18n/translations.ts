@@ -261,6 +261,8 @@ const pl = {
   'more.menuHint': 'Pozostałe moduły aplikacji:',
   'gaps.hint': 'Analiza „kapsułki minimum" na podstawie aktywnych rzeczy w Twojej szafie. Możesz od razu dodać brakującą rzecz — formularz wypełni się wstępnie danymi z kafelka.',
   'gaps.addThis': 'Dodaj do szafy',
+  'stylist.completeTitle': 'Uzupełnij stylizację',
+  'stylist.completeHint': 'Do pełnej stylizacji według wybranych kryteriów brakuje w szafie:',
 
   // statusy rzeczy
   'status.aktywna': 'Aktywna',
@@ -516,6 +518,8 @@ const en: typeof pl = {
   'more.menuHint': 'Other app modules:',
   'gaps.hint': 'A "minimum capsule" analysis based on active items in your wardrobe. You can add a missing item right away — the form is pre-filled with the tile data.',
   'gaps.addThis': 'Add to wardrobe',
+  'stylist.completeTitle': 'Complete the outfit',
+  'stylist.completeHint': 'To complete an outfit for the selected criteria, your wardrobe is missing:',
 
   'status.aktywna': 'Active',
   'status.zarchiwizowana': 'Archived',

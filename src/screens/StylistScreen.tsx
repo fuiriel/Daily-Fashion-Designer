@@ -16,7 +16,7 @@ import { Card, Chip, ChipRow, ItemThumb, PrimaryButton, Section } from '../compo
 import { OCCASIONS, STYLES, TIMES_OF_DAY, slotOf } from '../data/constants';
 import { useI18n } from '../i18n';
 import { bottomPrefLabel, occasionLabel, slotLabel, styleLabel, timeLabel } from '../i18n/labels';
-import { analyzeGaps } from '../logic/gaps';
+import { analyzeContextGaps, analyzeGaps } from '../logic/gaps';
 import { suggestOutfits } from '../logic/stylist';
 import { fetchCurrentWeather, geocodeCity, manualWeather } from '../services/weather';
 import { useAppStore } from '../store/useAppStore';
@@ -26,6 +26,7 @@ import { useContentStyle } from '../theme/responsive';
 import { showDialog } from '../utils/dialog';
 import {
   BottomPreference,
+  GapSuggestion,
   isItemActive,
   Occasion,
   OutfitSuggestion,
@@ -121,6 +122,15 @@ export default function StylistScreen({ navigation }: any) {
     // pusta szafa: nie ma z czego układać — pokaż sugestie zakupów (sekcja niżej)
     if (items.length === 0) {
       pendingScroll.current = true;
+      setCtxGaps(
+        effectiveWeather
+          ? analyzeContextGaps(
+              allItems,
+              { occasion, timeOfDay, bottomPreference: bottomPref, styles: styles_, weather: effectiveWeather, lang },
+              stores
+            )
+          : []
+      );
       setSuggestions([]);
       return;
     }
@@ -128,20 +138,28 @@ export default function StylistScreen({ navigation }: any) {
       showDialog(t('stylist.noWeatherTitle'), t('stylist.noWeatherMsg'));
       return;
     }
-    const res = suggestOutfits(items, {
+    const req = {
       occasion,
       timeOfDay,
       bottomPreference: bottomPref,
       styles: styles_,
       weather: effectiveWeather,
       lang,
-    });
+    };
+    const res = suggestOutfits(items, req);
+    setCtxGaps(analyzeContextGaps(allItems, req, stores));
     pendingScroll.current = true;
     setSuggestions(res);
   };
 
-  // sugestie zakupów, gdy nie da się złożyć zestawu
+  // sugestie zakupów dopasowane do wybranych kryteriów (liczone przy generowaniu);
+  // kapsuła podstawowa jako zapas, gdy nie znamy pogody
+  const [ctxGaps, setCtxGaps] = useState<GapSuggestion[]>([]);
   const gaps = useMemo(() => analyzeGaps(allItems, stores), [allItems, stores]);
+  const shownGaps = ctxGaps.length > 0 ? ctxGaps : gaps;
+
+  const addFromGap = (gap: GapSuggestion) =>
+    navigation.navigate('Szafa', { screen: 'ItemForm', params: { prefill: gap.prefill, prefillKey: Date.now() } });
 
   const saveSuggestion = (sug: OutfitSuggestion) => {
     const plLabel = OCCASIONS.find((o) => o.key === occasion)?.label ?? occasion;
@@ -274,8 +292,8 @@ export default function StylistScreen({ navigation }: any) {
               <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginBottom: 8 }}>
                 {items.length === 0 ? t('stylist.buyEmptyWardrobe') : t('stylist.buyNoMatch')}
               </Text>
-              {gaps.length > 0 ? (
-                <GapSuggestions gaps={gaps} limit={6} />
+              {shownGaps.length > 0 ? (
+                <GapSuggestions gaps={shownGaps} limit={6} onAdd={addFromGap} />
               ) : (
                 <Text style={{ color: theme.colors.accent, fontSize: 14, marginTop: 4 }}>{t('stylist.buyAllGood')}</Text>
               )}
@@ -349,6 +367,18 @@ export default function StylistScreen({ navigation }: any) {
               </View>
             ))}
           </View>
+
+          {/* niepełne stylizacje: podpowiedz, co dokupić do kompletu */}
+          {suggestions.length > 0 && ctxGaps.length > 0 && (
+            <Card style={{ marginTop: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                <MaterialCommunityIcons name="cart-plus" size={22} color={theme.colors.primary} style={{ marginRight: 8 }} />
+                <Text style={[s.cardTitle, { marginBottom: 0, flex: 1 }]}>{t('stylist.completeTitle')}</Text>
+              </View>
+              <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginBottom: 8 }}>{t('stylist.completeHint')}</Text>
+              <GapSuggestions gaps={ctxGaps} onAdd={addFromGap} />
+            </Card>
+          )}
         </View>
       )}
     </ScrollView>

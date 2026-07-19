@@ -64,7 +64,12 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - **Analiza zdjęcia**: po dodaniu zdjęcia aplikacja rozpoznaje dominujące kolory
   i podpowiada nazwę oraz opis rzeczy (np. „Czerwona sukienka")
 - **Zakupy**: sekcje „Co warto dokupić" i „Czego brakuje w szafie?" to kafelki
-  z ikoną części ubioru i linkami do sklepów
+  z ikoną części ubioru, linkami do sklepów i przyciskiem „Dodaj do szafy"
+  (formularz wypełnia się danymi z kafelka)
+- **Zakupy pod stylizację**: gdy stylista nie może ułożyć zestawu, podpowiada
+  zakupy dopasowane do wybranej okazji, pogody i preferencji (bez puchówki
+  przy 20°C); gdy zestaw jest niepełny (np. sukienka bez butów), sekcja
+  „Uzupełnij stylizację" wskazuje, czego dokupić do kompletu
 
 ### 🌓 Wygląd
 - **Tryb ciemny**: Więcej → Wygląd (System / Jasny / Ciemny) — działa na
