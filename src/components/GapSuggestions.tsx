@@ -13,8 +13,17 @@ function storeUrl(store: GapStoreLink, query: string): string {
 }
 
 // Kafelki sugestii zakupów: wizualizacja części ubioru (ikona), tytuł, powód
-// i klikalne sklepy otwierające ich strony internetowe.
-export default function GapSuggestions({ gaps, limit }: { gaps: GapSuggestion[]; limit?: number }) {
+// i klikalne sklepy otwierające ich strony internetowe. Z opcjonalnym
+// przyciskiem dodania brakującej rzeczy do szafy (onAdd).
+export default function GapSuggestions({
+  gaps,
+  limit,
+  onAdd,
+}: {
+  gaps: GapSuggestion[];
+  limit?: number;
+  onAdd?: (gap: GapSuggestion) => void;
+}) {
   const { theme } = useTheme();
   const s = useThemedStyles(makeStyles);
   const { t, lang } = useI18n();
@@ -46,6 +55,17 @@ export default function GapSuggestions({ gaps, limit }: { gaps: GapSuggestion[];
                 </TouchableOpacity>
               ))}
             </View>
+            {onAdd && (
+              <TouchableOpacity
+                style={s.addBtn}
+                onPress={() => onAdd(g)}
+                accessibilityRole="button"
+                accessibilityLabel={t('gaps.addThis')}
+              >
+                <MaterialCommunityIcons name="plus" size={15} color={theme.colors.onPrimary} />
+                <Text style={s.addBtnText}>{t('gaps.addThis')}</Text>
+              </TouchableOpacity>
+            )}
           </View>
         );
       })}
@@ -93,4 +113,15 @@ const makeStyles = (theme: Theme) =>
       marginBottom: 6,
     },
     storeText: { color: theme.colors.accent, fontSize: 12, fontWeight: '600', marginLeft: 4 },
+    addBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.radius.sm,
+      paddingVertical: 9,
+      marginTop: 8,
+      minHeight: 40,
+    },
+    addBtnText: { color: theme.colors.onPrimary, fontSize: 13, fontWeight: '700', marginLeft: 4 },
   });

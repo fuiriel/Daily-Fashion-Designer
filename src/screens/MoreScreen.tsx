@@ -1,131 +1,45 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import GapSuggestions from '../components/GapSuggestions';
-import { Card, Chip, ChipRow, PrimaryButton, Section } from '../components/ui';
-import { STYLES } from '../data/constants';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useI18n } from '../i18n';
-import { styleLabel } from '../i18n/labels';
-import { analyzeGaps } from '../logic/gaps';
-import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
-import { Language } from '../types';
 
-const THEME_OPTIONS = [
-  { key: 'system', labelKey: 'more.themeSystem', icon: 'theme-light-dark' },
-  { key: 'light', labelKey: 'more.themeLight', icon: 'white-balance-sunny' },
-  { key: 'dark', labelKey: 'more.themeDark', icon: 'weather-night' },
-] as const;
-
-const LANGUAGES: { key: Language; label: string; flag: string }[] = [
-  { key: 'pl', label: 'Polski', flag: '🇵🇱' },
-  { key: 'en', label: 'English', flag: '🇬🇧' },
-];
-
-export default function MoreScreen() {
+// Więcej (tylko wersja mobilna): przyciski przenoszące do modułów,
+// które nie mieszczą się w dolnym menu.
+export default function MoreScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const s = useThemedStyles(makeStyles);
   const contentStyle = useContentStyle();
-  const items = useAppStore((st) => st.items);
-  const stores = useAppStore((st) => st.stores);
-  const prefs = useAppStore((st) => st.prefs);
-  const setPrefs = useAppStore((st) => st.setPrefs);
-  const resetOnboarding = useAppStore((st) => st.resetOnboarding);
-  const themeMode = useAppStore((st) => st.themeMode);
-  const setThemeMode = useAppStore((st) => st.setThemeMode);
-  const setLanguage = useAppStore((st) => st.setLanguage);
 
-  const [showGaps, setShowGaps] = useState(false);
-  const gaps = useMemo(() => (showGaps ? analyzeGaps(items, stores) : []), [showGaps, items, stores]);
+  const items = [
+    { key: 'Kalendarz', icon: 'calendar-heart', label: t('title.calendar') },
+    { key: 'Budżet', icon: 'wallet-outline', label: t('title.budget') },
+    { key: 'Wyjazd', icon: 'bag-suitcase', label: t('title.trip') },
+    { key: 'Braki', icon: 'cart-heart', label: t('title.gaps') },
+    { key: 'Ustawienia', icon: 'cog-outline', label: t('title.settings') },
+  ];
 
   return (
     <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
-      <Section title={t('more.appearance')}>
-        <Text style={s.hint}>{t('more.appearanceHint')}</Text>
-        <View style={s.segment}>
-          {THEME_OPTIONS.map((opt) => {
-            const active = themeMode === opt.key;
-            return (
-              <TouchableOpacity
-                key={opt.key}
-                onPress={() => setThemeMode(opt.key)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                style={[s.segmentBtn, active && s.segmentBtnActive]}
-              >
-                <MaterialCommunityIcons name={opt.icon as any} size={18} color={active ? theme.colors.onPrimary : theme.colors.text} />
-                <Text style={[s.segmentText, active && { color: theme.colors.onPrimary, fontWeight: '700' }]}>
-                  {t(opt.labelKey)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </Section>
-
-      <Section title={t('more.language')}>
-        <View style={s.segment}>
-          {LANGUAGES.map((l) => {
-            const active = lang === l.key;
-            return (
-              <TouchableOpacity
-                key={l.key}
-                onPress={() => setLanguage(l.key)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                style={[s.segmentBtn, active && s.segmentBtnActive]}
-              >
-                <Text style={{ fontSize: 16, marginRight: 6 }}>{l.flag}</Text>
-                <Text style={[s.segmentText, active && { color: theme.colors.onPrimary, fontWeight: '700' }]}>{l.label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </Section>
-
-      <Section title={t('more.myStyle')}>
-        <Text style={s.hint}>{t('more.myStyleHint')}</Text>
-        <ChipRow>
-          {STYLES.map((st) => (
-            <Chip
-              key={st}
-              label={styleLabel(lang, st)}
-              selected={prefs.favoriteStyles.includes(st)}
-              onPress={() =>
-                setPrefs({
-                  favoriteStyles: prefs.favoriteStyles.includes(st)
-                    ? prefs.favoriteStyles.filter((x) => x !== st)
-                    : [...prefs.favoriteStyles, st],
-                })
-              }
-            />
-          ))}
-        </ChipRow>
-      </Section>
-
-      <Section title={t('more.gaps')}>
-        <Card>
-          <View style={s.switchRow}>
-            <Text style={{ color: theme.colors.text, flex: 1 }}>{t('more.gapsToggle')}</Text>
-            <Switch value={showGaps} onValueChange={setShowGaps} trackColor={{ true: theme.colors.primary }} />
+      <Text style={s.hint}>{t('more.menuHint')}</Text>
+      {items.map((item) => (
+        <TouchableOpacity
+          key={item.key}
+          style={s.row}
+          onPress={() => navigation.navigate(item.key)}
+          accessibilityRole="button"
+          accessibilityLabel={item.label}
+        >
+          <View style={s.iconCircle}>
+            <MaterialCommunityIcons name={item.icon as any} size={24} color={theme.colors.primary} />
           </View>
-          {showGaps && gaps.length === 0 && (
-            <Text style={{ color: theme.colors.accent, marginTop: 8 }}>{t('more.gapsAllGood')}</Text>
-          )}
-          {showGaps && gaps.length > 0 && (
-            <View style={{ marginTop: 10 }}>
-              <GapSuggestions gaps={gaps} />
-            </View>
-          )}
-        </Card>
-      </Section>
-
-      <Section title={t('more.about')}>
-        <PrimaryButton title={t('more.showOnboarding')} icon="information-outline" variant="outline" onPress={resetOnboarding} />
-      </Section>
+          <Text style={s.label}>{item.label}</Text>
+          <MaterialCommunityIcons name="chevron-right" size={24} color={theme.colors.textMuted} />
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 }
@@ -133,23 +47,26 @@ export default function MoreScreen() {
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
-    hint: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 8 },
-    switchRow: { flexDirection: 'row', alignItems: 'center' },
-    segment: {
-      flexDirection: 'row',
-      backgroundColor: theme.colors.chipBg,
-      borderRadius: theme.radius.md,
-      padding: 4,
-    },
-    segmentBtn: {
-      flex: 1,
+    hint: { color: theme.colors.textMuted, fontSize: 13, marginBottom: 12 },
+    row: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 10,
-      borderRadius: theme.radius.sm,
-      minHeight: 44,
+      backgroundColor: theme.colors.card,
+      borderRadius: theme.radius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 14,
+      marginBottom: 10,
+      minHeight: 64,
     },
-    segmentBtnActive: { backgroundColor: theme.colors.primary },
-    segmentText: { marginLeft: 6, color: theme.colors.text, fontSize: 14 },
+    iconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: theme.colors.chipBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    label: { flex: 1, fontSize: 16, fontWeight: '600', color: theme.colors.text },
   });

@@ -11,6 +11,9 @@ const pl = {
   'tab.budget': 'Budżet',
   'tab.trip': 'Wyjazd',
   'tab.more': 'Więcej',
+  'tab.add': 'Dodaj',
+  'tab.gaps': 'Braki',
+  'tab.settings': 'Ustawienia',
   'title.wardrobe': 'Moja szafa',
   'title.item': 'Rzecz',
   'title.itemNew': 'Nowy przedmiot',
@@ -20,6 +23,9 @@ const pl = {
   'title.newOutfit': 'Nowa stylizacja',
   'title.calendar': 'Kalendarz stylizacji',
   'title.budget': 'Budżet i wydatki',
+  'title.settings': 'Ustawienia',
+  'title.gaps': 'Czego brakuje w szafie?',
+  'title.trip': 'Wyjazd',
 
   // wspólne
   'common.ok': 'OK',
@@ -252,6 +258,9 @@ const pl = {
   'more.gapsAllGood': 'Świetnie! Twoja szafa pokrywa wszystkie podstawowe potrzeby. 👏',
   'more.about': 'O aplikacji',
   'more.showOnboarding': 'Pokaż wprowadzenie ponownie',
+  'more.menuHint': 'Pozostałe moduły aplikacji:',
+  'gaps.hint': 'Analiza „kapsułki minimum" na podstawie aktywnych rzeczy w Twojej szafie. Możesz od razu dodać brakującą rzecz — formularz wypełni się wstępnie danymi z kafelka.',
+  'gaps.addThis': 'Dodaj do szafy',
 
   // statusy rzeczy
   'status.aktywna': 'Aktywna',
@@ -270,6 +279,9 @@ const en: typeof pl = {
   'tab.budget': 'Budget',
   'tab.trip': 'Trip',
   'tab.more': 'More',
+  'tab.add': 'Add',
+  'tab.gaps': 'Gaps',
+  'tab.settings': 'Settings',
   'title.wardrobe': 'My wardrobe',
   'title.item': 'Item',
   'title.itemNew': 'New item',
@@ -279,6 +291,9 @@ const en: typeof pl = {
   'title.newOutfit': 'New outfit',
   'title.calendar': 'Outfit calendar',
   'title.budget': 'Budget & expenses',
+  'title.settings': 'Settings',
+  'title.gaps': 'What is missing?',
+  'title.trip': 'Trip',
 
   'common.ok': 'OK',
   'common.cancel': 'Cancel',
@@ -498,6 +513,9 @@ const en: typeof pl = {
   'more.gapsAllGood': 'Great! Your wardrobe covers all the basics. 👏',
   'more.about': 'About',
   'more.showOnboarding': 'Show the intro again',
+  'more.menuHint': 'Other app modules:',
+  'gaps.hint': 'A "minimum capsule" analysis based on active items in your wardrobe. You can add a missing item right away — the form is pre-filled with the tile data.',
+  'gaps.addThis': 'Add to wardrobe',
 
   'status.aktywna': 'Active',
   'status.zarchiwizowana': 'Archived',

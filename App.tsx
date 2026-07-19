@@ -1,10 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { DarkTheme, DefaultTheme, NavigationContainer, Theme as NavTheme } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer, Theme as NavTheme, useNavigation } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import DialogHost from './src/components/DialogHost';
 import Onboarding from './src/components/Onboarding';
@@ -12,11 +12,13 @@ import { useI18n } from './src/i18n';
 import { useAppStore, useHydrated } from './src/store/useAppStore';
 import BudgetScreen from './src/screens/BudgetScreen';
 import CalendarScreen from './src/screens/CalendarScreen';
+import GapsScreen from './src/screens/GapsScreen';
 import ItemDetailScreen from './src/screens/ItemDetailScreen';
 import ItemFormScreen from './src/screens/ItemFormScreen';
 import MoreScreen from './src/screens/MoreScreen';
 import OutfitBuilderScreen from './src/screens/OutfitBuilderScreen';
 import OutfitsScreen from './src/screens/OutfitsScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 import StylistScreen from './src/screens/StylistScreen';
 import TripScreen from './src/screens/TripScreen';
 import WardrobeScreen from './src/screens/WardrobeScreen';
@@ -27,6 +29,7 @@ import { useIsWide } from './src/theme/responsive';
 const Tab = createBottomTabNavigator();
 const WardrobeStack = createNativeStackNavigator();
 const OutfitsStack = createNativeStackNavigator();
+const MoreStack = createNativeStackNavigator();
 
 function stackScreenOptions(theme: Theme) {
   return {
@@ -60,6 +63,22 @@ function OutfitsStackScreen() {
   );
 }
 
+// Więcej (mobile): menu + moduły niedostępne w dolnym pasku
+function MoreStackScreen() {
+  const { theme } = useTheme();
+  const { t } = useI18n();
+  return (
+    <MoreStack.Navigator screenOptions={stackScreenOptions(theme)}>
+      <MoreStack.Screen name="MoreMenu" component={MoreScreen} options={{ title: t('tab.more') }} />
+      <MoreStack.Screen name="Kalendarz" component={CalendarScreen} options={{ title: t('title.calendar') }} />
+      <MoreStack.Screen name="Budżet" component={BudgetScreen} options={{ title: t('title.budget') }} />
+      <MoreStack.Screen name="Wyjazd" component={TripScreen} options={{ title: t('title.trip') }} />
+      <MoreStack.Screen name="Braki" component={GapsScreen} options={{ title: t('title.gaps') }} />
+      <MoreStack.Screen name="Ustawienia" component={SettingsScreen} options={{ title: t('title.settings') }} />
+    </MoreStack.Navigator>
+  );
+}
+
 const TAB_ICONS: Record<string, string> = {
   Stylista: 'auto-fix',
   Szafa: 'wardrobe-outline',
@@ -67,8 +86,53 @@ const TAB_ICONS: Record<string, string> = {
   Kalendarz: 'calendar-heart',
   Budżet: 'wallet-outline',
   Wyjazd: 'bag-suitcase',
+  Braki: 'cart-heart',
+  Ustawienia: 'cog-outline',
   Więcej: 'dots-horizontal-circle-outline',
 };
+
+// pusty ekran dla centralnego przycisku Dodaj (nawigacja przejmuje klik)
+function AddPlaceholder() {
+  return null;
+}
+
+// centralny, wyróżniony przycisk „Dodaj przedmiot" w dolnym pasku
+function AddTabButton() {
+  const { theme } = useTheme();
+  const { t } = useI18n();
+  const navigation = useNavigation<any>();
+  return (
+    <TouchableOpacity
+      style={addStyles.wrap}
+      onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
+      accessibilityRole="button"
+      accessibilityLabel={t('title.itemNew')}
+    >
+      <View style={[addStyles.button, { backgroundColor: theme.colors.primary }]}>
+        <MaterialCommunityIcons name="plus" size={30} color={theme.colors.onPrimary} />
+      </View>
+      <Text style={[addStyles.label, { color: theme.colors.textMuted }]}>{t('tab.add')}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const addStyles = StyleSheet.create({
+  wrap: { flex: 1, alignItems: 'center', justifyContent: 'flex-end' },
+  button: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -22,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  label: { fontSize: 10, marginTop: 2, marginBottom: 2 },
+});
 
 function navigationTheme(theme: Theme): NavTheme {
   const base = theme.dark ? DarkTheme : DefaultTheme;
@@ -136,7 +200,7 @@ function AppInner() {
           sceneContainerStyle: { backgroundColor: theme.colors.background },
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: theme.colors.textMuted,
-          // >=768 px: boczny pasek nawigacji (navigation rail); węziej: dolne zakładki
+          // >=768 px: boczny pasek ze wszystkimi modułami; węziej: dolne zakładki + Więcej
           tabBarPosition: isWide ? 'left' : 'bottom',
           tabBarVariant: isWide ? 'material' : 'uikit',
           tabBarLabelPosition: isWide ? 'below-icon' : undefined,
@@ -156,11 +220,25 @@ function AppInner() {
       >
         <Tab.Screen name="Stylista" component={StylistScreen} options={{ title: t('tab.stylist') }} />
         <Tab.Screen name="Szafa" component={WardrobeStackScreen} options={{ headerShown: false, title: t('tab.wardrobe') }} />
+        {!isWide && (
+          <Tab.Screen
+            name="Dodaj"
+            component={AddPlaceholder}
+            options={{ title: t('tab.add'), tabBarButton: () => <AddTabButton /> }}
+          />
+        )}
         <Tab.Screen name="Kompozycje" component={OutfitsStackScreen} options={{ headerShown: false, title: t('tab.outfits') }} />
-        <Tab.Screen name="Kalendarz" component={CalendarScreen} options={{ title: t('title.calendar'), tabBarLabel: t('tab.calendar') }} />
-        <Tab.Screen name="Budżet" component={BudgetScreen} options={{ title: t('title.budget'), tabBarLabel: t('tab.budget') }} />
-        <Tab.Screen name="Wyjazd" component={TripScreen} options={{ title: t('tab.trip') }} />
-        <Tab.Screen name="Więcej" component={MoreScreen} options={{ title: t('tab.more') }} />
+        {isWide ? (
+          <>
+            <Tab.Screen name="Kalendarz" component={CalendarScreen} options={{ title: t('title.calendar'), tabBarLabel: t('tab.calendar') }} />
+            <Tab.Screen name="Budżet" component={BudgetScreen} options={{ title: t('title.budget'), tabBarLabel: t('tab.budget') }} />
+            <Tab.Screen name="Wyjazd" component={TripScreen} options={{ title: t('tab.trip') }} />
+            <Tab.Screen name="Braki" component={GapsScreen} options={{ title: t('title.gaps'), tabBarLabel: t('tab.gaps') }} />
+            <Tab.Screen name="Ustawienia" component={SettingsScreen} options={{ title: t('title.settings'), tabBarLabel: t('tab.settings') }} />
+          </>
+        ) : (
+          <Tab.Screen name="Więcej" component={MoreStackScreen} options={{ headerShown: false, title: t('tab.more') }} />
+        )}
       </Tab.Navigator>
     </NavigationContainer>
   );

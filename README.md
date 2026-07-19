@@ -47,6 +47,14 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 - Rejestr wydatków, budżet miesięczny z ostrzeżeniem o przekroczeniu, wartość szafy
 - Lista ulubionych sklepów
 
+### 🧭 Nawigacja
+- **Mobile**: dolny pasek z centralnym przyciskiem **➕ Dodaj przedmiot**;
+  Kalendarz, Budżet, Wyjazd, Braki i Ustawienia dostępne z zakładki „Więcej"
+- **Przeglądarka (≥768 px)**: boczny pasek ze wszystkimi modułami (bez „Więcej")
+- **Ustawienia**: motyw, język, ulubione style, „O aplikacji"
+- **Czego brakuje w szafie?** — osobny moduł; z kafelka braku można od razu
+  dodać rzecz (formularz wypełnia się wstępnie danymi z kafelka)
+
 ### 🆕 Nowości
 - **Język**: polski i angielski (Więcej → Język / Language)
 - **Statusy ubrań**: archiwum / zwrócona / sprzedana / wyrzucona — takie rzeczy

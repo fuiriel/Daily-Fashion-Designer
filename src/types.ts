@@ -157,8 +157,20 @@ export interface GapStoreLink {
   url?: string; // adres sklepu (własny lub domyślny); brak = wyszukiwarka
 }
 
+// wstępne wypełnienie formularza „Nowy przedmiot" po kliknięciu
+// „Dodaj do szafy" na kafelku braków
+export interface GapPrefill {
+  mainCategory: MainCategory;
+  subcategory: string;
+  warmth?: 1 | 2 | 3 | 4 | 5;
+  waterproof?: boolean;
+  colors?: string[];
+  styles?: StyleTag[];
+}
+
 export interface GapSuggestion {
   id: string; // klucz tekstów w i18n/labels GAP_TEXTS
   icon: string; // ikona MaterialCommunityIcons wizualizująca część ubioru
   whereToBuy: GapStoreLink[];
+  prefill: GapPrefill;
 }

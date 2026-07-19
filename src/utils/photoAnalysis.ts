@@ -44,35 +44,77 @@ function nearestColor(r: number, g: number, b: number): string {
   return best;
 }
 
-function tallyPixels(
-  getPixel: (x: number, y: number) => [number, number, number, number] | null,
-  width: number,
-  height: number
-): string[] {
-  const counts = new Map<string, number>();
-  const cx0 = width * 0.2;
-  const cx1 = width * 0.8;
-  const cy0 = height * 0.2;
-  const cy1 = height * 0.8;
+type GetPixel = (x: number, y: number) => [number, number, number, number] | null;
+
+// Średni kolor tła wyznaczony z pierścienia krawędzi kadru (zewnętrzne ~10%).
+// Zdjęcia ubrań zwykle mają przedmiot w centrum, a tło przy brzegach.
+function edgeBackground(getPixel: GetPixel, width: number, height: number) {
   const step = Math.max(1, Math.floor(Math.min(width, height) / 48));
-  let total = 0;
+  const bx = width * 0.1;
+  const by = height * 0.1;
+  let r = 0,
+    g = 0,
+    b = 0,
+    n = 0;
   for (let y = 0; y < height; y += step) {
     for (let x = 0; x < width; x += step) {
+      const isEdge = x < bx || x > width - bx || y < by || y > height - by;
+      if (!isEdge) continue;
       const px = getPixel(x, y);
-      if (!px) continue;
-      const [r, g, b, a] = px;
-      if (a < 128) continue; // przezroczyste tło (PNG)
-      const weight = x >= cx0 && x <= cx1 && y >= cy0 && y <= cy1 ? 3 : 1;
-      const name = nearestColor(r, g, b);
-      counts.set(name, (counts.get(name) ?? 0) + weight);
-      total += weight;
+      if (!px || px[3] < 128) continue;
+      r += px[0];
+      g += px[1];
+      b += px[2];
+      n++;
     }
+  }
+  return n ? { r: r / n, g: g / n, b: b / n } : null;
+}
+
+function tallyPixels(getPixel: GetPixel, width: number, height: number): string[] {
+  const step = Math.max(1, Math.floor(Math.min(width, height) / 48));
+  const bg = edgeBackground(getPixel, width, height);
+  // analizujemy tylko środek kadru (tam jest przedmiot)...
+  const cx0 = width * 0.18;
+  const cx1 = width * 0.82;
+  const cy0 = height * 0.18;
+  const cy1 = height * 0.82;
+
+  const run = (excludeBg: boolean): { counts: Map<string, number>; total: number } => {
+    const counts = new Map<string, number>();
+    let total = 0;
+    for (let y = cy0; y <= cy1; y += step) {
+      for (let x = cx0; x <= cx1; x += step) {
+        const px = getPixel(Math.floor(x), Math.floor(y));
+        if (!px) continue;
+        const [r, g, b, a] = px;
+        if (a < 128) continue; // przezroczyste tło (PNG)
+        if (excludeBg && bg) {
+          // ...i pomijamy piksele podobne do koloru tła z krawędzi
+          const dr = r - bg.r;
+          const dg = g - bg.g;
+          const db = b - bg.b;
+          if (dr * dr + dg * dg + db * db < 55 * 55) continue;
+        }
+        const name = nearestColor(r, g, b);
+        counts.set(name, (counts.get(name) ?? 0) + 1);
+        total++;
+      }
+    }
+    return { counts, total };
+  };
+
+  let { counts, total } = run(true);
+  // gdy przedmiot ma kolor tła (prawie wszystko odfiltrowane) — licz bez wykluczania
+  const centerSamples = Math.ceil(((cx1 - cx0) / step) * ((cy1 - cy0) / step));
+  if (total < centerSamples * 0.12) {
+    ({ counts, total } = run(false));
   }
   if (!total) return [];
   return [...counts.entries()]
     .map(([name, count]) => ({ name, share: count / total }))
     .sort((a, b) => b.share - a.share)
-    .filter((c, idx) => idx === 0 || c.share >= 0.18)
+    .filter((c, idx) => idx === 0 || c.share >= 0.22)
     .slice(0, 2)
     .map((c) => c.name);
 }
@@ -168,7 +210,7 @@ const PL_FEMININE = new Set([
 const PL_PLURAL = new Set([
   'spodnie', 'jeansy', 'legginsy', 'szorty', 'sneakersy', 'botki', 'kozaki', 'szpilki',
   'sandały', 'baleriny', 'mokasyny', 'kalosze', 'buty sportowe', 'rękawiczki', 'rajstopy',
-  'okulary przeciwsłoneczne',
+  'okulary przeciwsłoneczne', 'skarpety',
 ]);
 
 function plColorAdjective(color: string, subcategory: string): string {

@@ -51,6 +51,7 @@ export const SUBCATEGORIES: Record<MainCategory, { name: string; slot: Slot }[]>
     { name: 'okulary przeciwsłoneczne', slot: 'accessory' },
     { name: 'parasol', slot: 'accessory' },
     { name: 'rajstopy', slot: 'accessory' },
+    { name: 'skarpety', slot: 'accessory' },
   ],
 };
 

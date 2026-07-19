@@ -1,6 +1,6 @@
 import { slotOf } from '../data/constants';
 import { itemFormality } from './stylist';
-import { GapStoreLink, GapSuggestion, StorePref, WardrobeItem, isItemActive } from '../types';
+import { GapPrefill, GapStoreLink, GapSuggestion, StorePref, WardrobeItem, isItemActive } from '../types';
 
 // kategoria zakupowa reguły — dobiera sklepy pasujące do danej części garderoby
 type StoreCategory = 'clothes' | 'elegant' | 'sport' | 'shoes' | 'bags' | 'accessories';
@@ -11,6 +11,26 @@ interface CapsuleRule {
   storeCategory: StoreCategory;
   check: (items: WardrobeItem[]) => boolean;
 }
+
+// dane startowe formularza dodawania dla każdej reguły
+const PREFILLS: Record<string, GapPrefill> = {
+  warmOuter: { mainCategory: 'ubrania', subcategory: 'kurtka', warmth: 5 },
+  midOuter: { mainCategory: 'ubrania', subcategory: 'kurtka', warmth: 3 },
+  rainOuter: { mainCategory: 'ubrania', subcategory: 'kurtka', warmth: 3, waterproof: true },
+  rainShoes: { mainCategory: 'buty', subcategory: 'kalosze', warmth: 2, waterproof: true },
+  winterShoes: { mainCategory: 'buty', subcategory: 'kozaki', warmth: 4 },
+  sneakers: { mainCategory: 'buty', subcategory: 'sneakersy', warmth: 2, styles: ['casual'] },
+  elegantShoes: { mainCategory: 'buty', subcategory: 'szpilki', warmth: 1, styles: ['elegancki'] },
+  elegantBase: { mainCategory: 'ubrania', subcategory: 'sukienka', warmth: 2, styles: ['elegancki'] },
+  darkSet: { mainCategory: 'ubrania', subcategory: 'sukienka', warmth: 2, colors: ['czarny'] },
+  whiteShirt: { mainCategory: 'ubrania', subcategory: 'koszula', warmth: 2, colors: ['biały'] },
+  bottoms: { mainCategory: 'ubrania', subcategory: 'jeansy', warmth: 3 },
+  warmSweater: { mainCategory: 'ubrania', subcategory: 'sweter', warmth: 4 },
+  sportSet: { mainCategory: 'ubrania', subcategory: 'bluza', warmth: 2, styles: ['sportowy'] },
+  umbrella: { mainCategory: 'akcesoria', subcategory: 'parasol', warmth: 2, waterproof: true },
+  winterAcc: { mainCategory: 'akcesoria', subcategory: 'szalik', warmth: 4 },
+  bag: { mainCategory: 'akcesoria', subcategory: 'torebka', warmth: 2 },
+};
 
 const has = (items: WardrobeItem[], pred: (i: WardrobeItem) => boolean) => items.some(pred);
 
@@ -193,5 +213,6 @@ export function analyzeGaps(allItems: WardrobeItem[], stores: StorePref[]): GapS
     id: r.id,
     icon: r.icon,
     whereToBuy: storesFor(r.storeCategory, stores),
+    prefill: PREFILLS[r.id],
   }));
 }

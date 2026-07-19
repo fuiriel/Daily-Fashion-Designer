@@ -8,7 +8,7 @@ import { occasionLabel } from '../i18n/labels';
 import { useAppStore } from '../store/useAppStore';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
-import { useContentStyle } from '../theme/responsive';
+import { useContentStyle, useIsWide } from '../theme/responsive';
 import { showDialog } from '../utils/dialog';
 import { Outfit } from '../types';
 
@@ -17,6 +17,7 @@ export default function OutfitsScreen({ navigation }: any) {
   const { t, lang } = useI18n();
   const s = useThemedStyles(makeStyles);
   const contentStyle = useContentStyle();
+  const isWide = useIsWide();
   const outfits = useAppStore((st) => st.outfits);
   const items = useAppStore((st) => st.items);
   const toggleFavorite = useAppStore((st) => st.toggleOutfitFavorite);
@@ -47,7 +48,12 @@ export default function OutfitsScreen({ navigation }: any) {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Kalendarz', { planOutfitId: outfit.id })}
+            onPress={() =>
+              // na szerokim ekranie Kalendarz jest zakładką; na mobile żyje w stacku Więcej
+              isWide
+                ? navigation.navigate('Kalendarz', { planOutfitId: outfit.id })
+                : navigation.navigate('Więcej', { screen: 'Kalendarz', params: { planOutfitId: outfit.id }, initial: false })
+            }
             hitSlop={10}
             style={{ marginRight: 12 }}
             accessibilityRole="button"

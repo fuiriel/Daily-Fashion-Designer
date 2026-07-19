@@ -42,6 +42,7 @@ const EN_SUBCATEGORIES: Record<string, string> = {
   'okulary przeciwsłoneczne': 'sunglasses',
   parasol: 'umbrella',
   rajstopy: 'tights',
+  skarpety: 'socks',
 };
 
 const EN_COLORS: Record<string, string> = {

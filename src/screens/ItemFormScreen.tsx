@@ -53,6 +53,20 @@ export default function ItemFormScreen({ navigation, route }: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation, editId, lang]);
 
+  // wstępne wypełnienie z kafelka „Czego brakuje w szafie?"
+  const prefill = route.params?.prefill;
+  const prefillKey = route.params?.prefillKey;
+  React.useEffect(() => {
+    if (!prefill || editId) return;
+    setMainCategory(prefill.mainCategory);
+    setSubcategory(prefill.subcategory);
+    if (prefill.warmth) setWarmth(prefill.warmth);
+    if (prefill.waterproof !== undefined) setWaterproof(prefill.waterproof);
+    if (prefill.colors) setColors(prefill.colors);
+    if (prefill.styles) setStyles(prefill.styles);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillKey]);
+
   const [name, setName] = useState(existing?.name ?? '');
   const [description, setDescription] = useState(existing?.description ?? '');
   const [mainCategory, setMainCategory] = useState<MainCategory>(existing?.mainCategory ?? 'ubrania');
