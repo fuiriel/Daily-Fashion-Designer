@@ -47,6 +47,12 @@ export default function ItemFormScreen({ navigation, route }: any) {
   const updateItem = useAppStore((st) => st.updateItem);
   const catalogs = useAppStore((st) => st.catalogs);
 
+  // tytuł widoku: „Nowy przedmiot" / „Edycja przedmiotu"
+  React.useLayoutEffect(() => {
+    navigation.setOptions({ title: editId ? t('title.itemEdit') : t('title.itemNew') });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, editId, lang]);
+
   const [name, setName] = useState(existing?.name ?? '');
   const [description, setDescription] = useState(existing?.description ?? '');
   const [mainCategory, setMainCategory] = useState<MainCategory>(existing?.mainCategory ?? 'ubrania');

@@ -43,7 +43,7 @@ function WardrobeStackScreen() {
   return (
     <WardrobeStack.Navigator screenOptions={stackScreenOptions(theme)}>
       <WardrobeStack.Screen name="WardrobeList" component={WardrobeScreen} options={{ title: t('title.wardrobe') }} />
-      <WardrobeStack.Screen name="ItemForm" component={ItemFormScreen} options={{ title: t('title.item') }} />
+      <WardrobeStack.Screen name="ItemForm" component={ItemFormScreen} options={{ title: t('title.itemNew') }} />
       <WardrobeStack.Screen name="ItemDetail" component={ItemDetailScreen} options={{ title: t('title.itemDetails') }} />
     </WardrobeStack.Navigator>
   );

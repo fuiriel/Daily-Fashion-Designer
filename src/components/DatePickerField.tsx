@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useI18n } from '../i18n';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
@@ -17,9 +17,9 @@ interface Props {
   minISO?: string;
 }
 
-// Pole daty. W przeglądarce używa natywnego, typowego datepickera
-// (<input type="date"> z atrybutami min/max), a na telefonie własnego
-// modala z kalendarzem. Przyszłe daty pozostają niewybieralne.
+// Pole daty z ostylowanym, kompaktowym kalendarzem (spójnym z motywem
+// aplikacji) — identyczne na telefonie i w przeglądarce. Przyszłe daty
+// są niewybieralne.
 export default function DatePickerField({
   label,
   value,
@@ -34,41 +34,6 @@ export default function DatePickerField({
   const [open, setOpen] = useState(false);
   const today = todayISO();
   const max = maxISO ?? today;
-
-  if (Platform.OS === 'web') {
-    return (
-      <View style={{ marginBottom: theme.spacing.md }}>
-        <Text style={s.label}>{label}</Text>
-        <input
-          type="date"
-          value={value}
-          max={max}
-          min={minISO}
-          aria-label={label}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v && v > max) return; // walidacja: bez dat z przyszłości
-            if (v && minISO && v < minISO) return;
-            onChange(v);
-          }}
-          style={{
-            boxSizing: 'border-box',
-            width: '100%',
-            backgroundColor: theme.colors.card,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.radius.sm,
-            padding: '11px 12px',
-            fontSize: 15,
-            fontFamily: 'inherit',
-            color: value ? theme.colors.text : theme.colors.textMuted,
-            colorScheme: theme.dark ? 'dark' : 'light',
-            minHeight: 44,
-          }}
-        />
-        <Text style={s.webHint}>{t('common.noFutureDates')}</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={{ marginBottom: theme.spacing.md }}>
@@ -165,5 +130,4 @@ const makeStyles = (theme: Theme) =>
       alignSelf: 'center',
     },
     hint: { color: theme.colors.textMuted, fontSize: 12, marginTop: 8 },
-    webHint: { color: theme.colors.textMuted, fontSize: 12, marginTop: 4 },
   });
