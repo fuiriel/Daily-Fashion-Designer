@@ -111,6 +111,7 @@ const pl = {
 
   // formularz rzeczy
   'item.photo': 'Zdjęcie',
+  'item.photoOptional': 'Zdjęcie jest opcjonalne — bez niego rzecz dostanie ikonę pasującą do rodzaju.',
   'item.takePhoto': 'Zrób zdjęcie',
   'item.fromGallery': 'Z galerii',
   'item.name': 'Nazwa *',
@@ -377,6 +378,7 @@ const en: typeof pl = {
   'wardrobe.removeCatalogMsg': 'Items stay in the wardrobe, only the catalogue disappears.',
 
   'item.photo': 'Photo',
+  'item.photoOptional': 'A photo is optional — without one the item gets an icon matching its type.',
   'item.takePhoto': 'Take a photo',
   'item.fromGallery': 'From gallery',
   'item.name': 'Name *',

@@ -7,7 +7,8 @@ dzień — biorąc pod uwagę pogodę, porę dnia, okazję i Twój ulubiony styl
 ## Co potrafi
 
 ### 👚 Wirtualna szafa
-- Dodawaj ubrania, buty i akcesoria **ze zdjęciem** (aparat lub galeria)
+- Dodawaj ubrania, buty i akcesoria **ze zdjęciem** (aparat lub galeria);
+  zdjęcie jest opcjonalne — bez niego rzecz dostaje ikonę pasującą do rodzaju
 - Opisuj i kategoryzuj: rodzaj (sukienka, jeansy, sneakersy…), kolory, wzór, rozmiar, marka
 - Opcjonalnie: data zakupu, cena, sklep — zakupy trafiają automatycznie do rejestru wydatków
 - Atrybuty „mądre”: poziom ciepła (1–5), nieprzemakalność, style, okazje, pory roku

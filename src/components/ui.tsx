@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { COLOR_PALETTE } from '../data/constants';
+import { subcategoryIcon } from '../data/icons';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { WardrobeItem } from '../types';
@@ -191,7 +192,7 @@ export function ItemThumb({
       }}
     >
       <MaterialCommunityIcons
-        name={item.mainCategory === 'buty' ? 'shoe-heel' : item.mainCategory === 'akcesoria' ? 'bag-personal' : 'tshirt-crew'}
+        name={subcategoryIcon(item.mainCategory, item.subcategory) as any}
         size={size * 0.45}
         color={theme.colors.textMuted}
       />

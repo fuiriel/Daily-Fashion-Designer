@@ -29,6 +29,7 @@ import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
 import { showDialog } from '../utils/dialog';
+import { subcategoryIcon } from '../data/icons';
 import { analyzePhotoColors, suggestItemDescription, suggestItemName } from '../utils/photoAnalysis';
 import { MainCategory, Occasion, Pattern, Season, StyleTag, WardrobeItem } from '../types';
 
@@ -191,7 +192,12 @@ export default function ItemFormScreen({ navigation, route }: any) {
             <Image source={{ uri: photoUri }} style={s.photo} />
           ) : (
             <View style={[s.photo, s.photoPlaceholder]}>
-              <MaterialCommunityIcons name="camera-outline" size={32} color={theme.colors.textMuted} />
+              {/* bez zdjęcia pokazujemy ikonę rzeczy (taka trafi na listę) */}
+              <MaterialCommunityIcons
+                name={subcategory ? (subcategoryIcon(mainCategory, subcategory) as any) : 'camera-outline'}
+                size={38}
+                color={theme.colors.textMuted}
+              />
             </View>
           )}
           <View style={{ marginLeft: 12, flex: 1 }}>
@@ -199,6 +205,7 @@ export default function ItemFormScreen({ navigation, route }: any) {
             <PrimaryButton title={t('item.fromGallery')} icon="image" variant="outline" onPress={() => pickImage(false)} />
           </View>
         </View>
+        {!photoUri && <Text style={s.photoHint}>{t('item.photoOptional')}</Text>}
         {detectedColors.length > 0 && (
           <View style={s.suggestBox}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, flexWrap: 'wrap' }}>
@@ -377,6 +384,7 @@ const makeStyles = (theme: Theme) =>
       padding: 10,
       marginTop: 10,
     },
+    photoHint: { color: theme.colors.textMuted, fontSize: 12, marginTop: 8 },
     suggestText: { color: theme.colors.text, fontSize: 13, flexShrink: 1 },
     suggestApply: { color: theme.colors.primary, fontWeight: '700', fontSize: 13, marginLeft: 10 },
     colorSwatch: {
