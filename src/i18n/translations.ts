@@ -30,6 +30,7 @@ const pl = {
   // wspólne
   'common.ok': 'OK',
   'common.cancel': 'Anuluj',
+  'common.close': 'Zamknij',
   'common.delete': 'Usuń',
   'common.save': 'Zapisz',
   'common.add': 'Dodaj',
@@ -299,6 +300,7 @@ const en: typeof pl = {
 
   'common.ok': 'OK',
   'common.cancel': 'Cancel',
+  'common.close': 'Close',
   'common.delete': 'Delete',
   'common.save': 'Save',
   'common.add': 'Add',

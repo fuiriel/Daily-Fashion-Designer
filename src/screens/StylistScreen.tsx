@@ -24,6 +24,7 @@ import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
 import { showDialog } from '../utils/dialog';
+import { openItemForm } from '../utils/navigation';
 import {
   BottomPreference,
   GapSuggestion,
@@ -159,7 +160,7 @@ export default function StylistScreen({ navigation }: any) {
   const shownGaps = ctxGaps.length > 0 ? ctxGaps : gaps;
 
   const addFromGap = (gap: GapSuggestion) =>
-    navigation.navigate('Szafa', { screen: 'ItemForm', params: { prefill: gap.prefill, prefillKey: Date.now() } });
+    openItemForm(navigation, { prefill: gap.prefill, prefillKey: Date.now() });
 
   const saveSuggestion = (sug: OutfitSuggestion) => {
     const plLabel = OCCASIONS.find((o) => o.key === occasion)?.label ?? occasion;
@@ -301,7 +302,7 @@ export default function StylistScreen({ navigation }: any) {
                 title={t('stylist.addItem')}
                 icon="plus"
                 variant="outline"
-                onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
+                onPress={() => openItemForm(navigation)}
                 style={{ marginTop: 14 }}
               />
             </Card>

@@ -9,6 +9,7 @@ import { Theme } from '../theme';
 import { useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
 import { GapSuggestion } from '../types';
+import { openItemForm } from '../utils/navigation';
 
 // Moduł „Czego brakuje w szafie?" — kafelki braków z możliwością dodania
 // brakującej rzeczy (formularz wstępnie wypełniony danymi z kafelka).
@@ -22,7 +23,7 @@ export default function GapsScreen({ navigation }: any) {
 
   const addFromGap = (gap: GapSuggestion) => {
     // otwórz formularz nowego przedmiotu z danymi z kafelka
-    navigation.navigate('Szafa', { screen: 'ItemForm', params: { prefill: gap.prefill, prefillKey: Date.now() } });
+    openItemForm(navigation, { prefill: gap.prefill, prefillKey: Date.now() });
   };
 
   return (

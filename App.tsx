@@ -25,6 +25,7 @@ import WardrobeScreen from './src/screens/WardrobeScreen';
 import { Theme } from './src/theme';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { useIsWide } from './src/theme/responsive';
+import { openItemForm } from './src/utils/navigation';
 
 const Tab = createBottomTabNavigator();
 const WardrobeStack = createNativeStackNavigator();
@@ -104,7 +105,7 @@ function AddTabButton() {
   return (
     <TouchableOpacity
       style={addStyles.wrap}
-      onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
+      onPress={() => openItemForm(navigation)}
       accessibilityRole="button"
       accessibilityLabel={t('title.itemNew')}
     >

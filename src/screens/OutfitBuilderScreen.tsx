@@ -10,6 +10,7 @@ import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
 import { showDialog } from '../utils/dialog';
+import { openItemForm } from '../utils/navigation';
 import { isItemActive, MainCategory, Occasion } from '../types';
 
 export default function OutfitBuilderScreen({ navigation }: any) {
@@ -59,7 +60,7 @@ export default function OutfitBuilderScreen({ navigation }: any) {
           <PrimaryButton
             title={t('builder.goToWardrobe')}
             icon="plus"
-            onPress={() => navigation.navigate('Szafa', { screen: 'ItemForm', params: {} })}
+            onPress={() => openItemForm(navigation)}
           />
         </View>
       </View>

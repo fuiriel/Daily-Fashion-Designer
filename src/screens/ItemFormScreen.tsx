@@ -47,11 +47,34 @@ export default function ItemFormScreen({ navigation, route }: any) {
   const updateItem = useAppStore((st) => st.updateItem);
   const catalogs = useAppStore((st) => st.catalogs);
 
-  // tytuł widoku: „Nowy przedmiot" / „Edycja przedmiotu"
+  // zamknięcie formularza — zawsze wraca do szafy, nigdy nie zostawia użytkownika
+  // uwięzionego. Jeśli w tym samym stosie jest ekran pod spodem (edycja z listy
+  // lub ze szczegółów), cofamy się do niego; w przeciwnym razie (formularz
+  // otwarty z innej zakładki) resetujemy stos Szafy do listy.
+  const closeForm = React.useCallback(() => {
+    const state = navigation.getState?.();
+    const canGoBackInStack = !!state && typeof state.index === 'number' && state.index > 0;
+    if (canGoBackInStack) navigation.goBack();
+    else navigation.reset({ index: 0, routes: [{ name: 'WardrobeList' }] });
+  }, [navigation]);
+
+  // tytuł widoku + przycisk zamknięcia (gwarantuje wyjście do szafy)
   React.useLayoutEffect(() => {
-    navigation.setOptions({ title: editId ? t('title.itemEdit') : t('title.itemNew') });
+    navigation.setOptions({
+      title: editId ? t('title.itemEdit') : t('title.itemNew'),
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={closeForm}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.close')}
+          style={{ paddingHorizontal: 6, paddingVertical: 4 }}
+        >
+          <MaterialCommunityIcons name="close" size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+      ),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, editId, lang]);
+  }, [navigation, editId, lang, closeForm, theme]);
 
   // wstępne wypełnienie z kafelka „Czego brakuje w szafie?"
   const prefill = route.params?.prefill;
@@ -157,7 +180,7 @@ export default function ItemFormScreen({ navigation, route }: any) {
     };
     if (editId) updateItem(editId, data);
     else addItem(data);
-    navigation.goBack();
+    closeForm();
   };
 
   return (
