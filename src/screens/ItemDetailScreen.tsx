@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Card, Chip, ChipRow, ColorDots, PrimaryButton } from '../components/ui';
+import { ItemImage } from '../components/ItemImage';
 import { useI18n } from '../i18n';
 import {
   categoryLabel,
@@ -73,13 +74,13 @@ export default function ItemDetailScreen({ navigation, route }: any) {
   return (
     <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <View style={{ alignItems: 'center', marginBottom: 16 }}>
-        {item.photoUri ? (
-          <Image source={{ uri: item.photoUri }} style={s.photo} />
-        ) : (
-          <View style={[s.photo, s.photoPlaceholder]}>
-            <MaterialCommunityIcons name="hanger" size={64} color={theme.colors.textMuted} />
-          </View>
-        )}
+        <ItemImage
+          photoUri={item.photoUri}
+          mainCategory={item.mainCategory}
+          subcategory={item.subcategory}
+          size={200}
+          borderRadius={theme.radius.lg}
+        />
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
           <Text style={s.title}>{item.name}</Text>
           <TouchableOpacity onPress={() => toggleFavorite(item.id)} style={{ marginLeft: 8 }} accessibilityRole="button">
@@ -157,12 +158,6 @@ export default function ItemDetailScreen({ navigation, route }: any) {
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
-    photo: { width: 200, height: 200, borderRadius: theme.radius.lg },
-    photoPlaceholder: {
-      backgroundColor: theme.colors.chipBg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     title: { fontSize: 20, fontWeight: '700', color: theme.colors.text },
     desc: { color: theme.colors.textMuted, marginTop: 4, textAlign: 'center' },
     cardTitle: { fontWeight: '700', color: theme.colors.text, marginBottom: 8 },

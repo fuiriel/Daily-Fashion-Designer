@@ -1,8 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useMemo, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import DatePickerField from '../components/DatePickerField';
+import { ItemImage } from '../components/ItemImage';
 import { Chip, ChipRow, Field, PrimaryButton, Section } from '../components/ui';
 import {
   COLOR_PALETTE,
@@ -29,7 +30,7 @@ import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { useContentStyle } from '../theme/responsive';
 import { showDialog } from '../utils/dialog';
-import { subcategoryIcon } from '../data/icons';
+import { toPersistentPhotoUri } from '../utils/image';
 import { analyzePhotoColors, suggestItemDescription, suggestItemName } from '../utils/photoAnalysis';
 import { MainCategory, Occasion, Pattern, Season, StyleTag, WardrobeItem } from '../types';
 
@@ -132,7 +133,8 @@ export default function ItemFormScreen({ navigation, route }: any) {
       : await ImagePicker.launchImageLibraryAsync(options);
     if (!result.canceled && result.assets?.[0]) {
       const asset = result.assets[0];
-      setPhotoUri(asset.uri);
+      // trwały adres zdjęcia (na webie data URI zamiast ulotnego blob:)
+      setPhotoUri(toPersistentPhotoUri(asset));
       // rozpoznaj dominujące kolory i podpowiedz atrybuty
       const found = await analyzePhotoColors(asset.uri, asset.base64 ?? undefined);
       if (found.length) {
@@ -188,18 +190,13 @@ export default function ItemFormScreen({ navigation, route }: any) {
     <ScrollView style={s.container} contentContainerStyle={[{ padding: 16, paddingBottom: 40 }, contentStyle]}>
       <Section title={t('item.photo')}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={s.photo} />
-          ) : (
-            <View style={[s.photo, s.photoPlaceholder]}>
-              {/* bez zdjęcia pokazujemy ikonę rzeczy (taka trafi na listę) */}
-              <MaterialCommunityIcons
-                name={subcategory ? (subcategoryIcon(mainCategory, subcategory) as any) : 'camera-outline'}
-                size={38}
-                color={theme.colors.textMuted}
-              />
-            </View>
-          )}
+          <ItemImage
+            photoUri={photoUri}
+            mainCategory={mainCategory}
+            subcategory={subcategory}
+            size={110}
+            borderRadius={theme.radius.md}
+          />
           <View style={{ marginLeft: 12, flex: 1 }}>
             <PrimaryButton title={t('item.takePhoto')} icon="camera" onPress={() => pickImage(true)} style={{ marginBottom: 8 }} />
             <PrimaryButton title={t('item.fromGallery')} icon="image" variant="outline" onPress={() => pickImage(false)} />
@@ -370,12 +367,6 @@ export default function ItemFormScreen({ navigation, route }: any) {
 const makeStyles = (theme: Theme) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
-    photo: { width: 110, height: 110, borderRadius: theme.radius.md },
-    photoPlaceholder: {
-      backgroundColor: theme.colors.chipBg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     suggestBox: {
       flexDirection: 'row',
       alignItems: 'center',

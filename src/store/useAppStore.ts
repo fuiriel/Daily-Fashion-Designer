@@ -1,8 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { Catalog, Expense, Language, Outfit, PlannedOutfit, StorePref, UserPrefs, WardrobeItem } from '../types';
+import { persistStorage } from './storage';
 
 export function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -169,7 +169,8 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'daily-fashion-designer',
-      storage: createJSONStorage(() => AsyncStorage),
+      // Web: IndexedDB (duży limit — mieści zdjęcia w base64). Telefon: AsyncStorage.
+      storage: createJSONStorage(() => persistStorage),
     }
   )
 );
