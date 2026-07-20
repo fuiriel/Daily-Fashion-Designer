@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  Image,
   StyleSheet,
   Text,
   TextInput,
@@ -13,6 +12,7 @@ import { COLOR_PALETTE } from '../data/constants';
 import { Theme } from '../theme';
 import { useTheme, useThemedStyles } from '../theme/ThemeContext';
 import { WardrobeItem } from '../types';
+import { ItemImage } from './ItemImage';
 
 export function Chip({
   label,
@@ -177,25 +177,14 @@ export function ItemThumb({
   onPress?: () => void;
 }) {
   const { theme } = useTheme();
-  const content = item.photoUri ? (
-    <Image source={{ uri: item.photoUri }} style={{ width: size, height: size, borderRadius: theme.radius.sm }} />
-  ) : (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: theme.radius.sm,
-        backgroundColor: theme.colors.chipBg,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <MaterialCommunityIcons
-        name={item.mainCategory === 'buty' ? 'shoe-heel' : item.mainCategory === 'akcesoria' ? 'bag-personal' : 'tshirt-crew'}
-        size={size * 0.45}
-        color={theme.colors.textMuted}
-      />
-    </View>
+  const content = (
+    <ItemImage
+      photoUri={item.photoUri}
+      mainCategory={item.mainCategory}
+      subcategory={item.subcategory}
+      size={size}
+      borderRadius={theme.radius.sm}
+    />
   );
   if (!onPress) return content;
   return (
